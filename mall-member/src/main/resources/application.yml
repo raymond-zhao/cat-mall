@@ -7,6 +7,12 @@ spring:
     url: jdbc:mysql://121.199.11.223:3306/catmall_ums
     username: root
     password: root
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+  application:
+    name: catmall-member
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml

@@ -105,6 +105,64 @@ $ docker restart redis
 
 [人人开源代码生成器 - 码云](https://gitee.com/renrenio/renren-generator)
 
+### Maven
+
+```xml
+<!-- 阿里云镜像 -->
+<mirror>
+    <id>aliyunmaven</id>
+    <mirrorOf>*</mirrorOf>
+    <name>阿里云公共仓库</name>
+    <url>https://maven.aliyun.com/repository/public</url>
+</mirror>
+<mirror>
+    <id>nexus-aliyun</id>
+    <mirrorOf>central</mirrorOf>
+    <name>Nexus Aliyun</name>
+    <url>https://maven.aliyun.com/nexus/content/groups/public</url>
+</mirror>
+<mirror>
+    <id>aliyunmaven</id>
+    <mirrorOf>*</mirrorOf>
+    <name>阿里云Google仓库</name>
+    <url>https://maven.aliyun.com/repository/google</url>
+</mirror>
+<mirror>
+    <id>aliyunmaven</id>
+    <mirrorOf>*</mirrorOf>
+    <name>阿里云Apache仓库</name>
+    <url>https://maven.aliyun.com/repository/apache-snapshots</url>
+</mirror>
+<mirror>
+    <id>aliyunmaven</id>
+    <mirrorOf>*</mirrorOf>
+    <name>阿里云Spring仓库</name>
+    <url>https://maven.aliyun.com/repository/spring</url>
+</mirror>
+<mirror>
+    <id>aliyunmaven</id>
+    <mirrorOf>*</mirrorOf>
+    <name>阿里云Spring插件仓库</name>
+    <url>https://maven.aliyun.com/repository/spring-plugin</url>
+</mirror>
+```
+
+```xml
+<!-- 编译环境 -->
+<profile>
+    <id>jdk-1.8</id>
+    <activation>
+        <activeByDefault>true</activeByDefault>
+        <jdk>1.8</jdk>
+    </activation>
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
+    </properties>
+</profile>
+```
+
 ### 修改NPM源
 
 ```shell
@@ -154,10 +212,76 @@ $ npm run dev # 此时可成功
 </dependencyManagement>
 ```
 
+### Nacos服务注册与发现
+
 ```xml
 <dependency>
     <groupId>com.alibaba.cloud</groupId>
     <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+</dependency>
+```
+
+```properties
+spring.application.name: catmall-coupon # 微服务名
+spring.cloud.nacos.discovery.server-addr: localhost:8848 # 注册地址
+```
+
+```java
+// 主启动类
+@EnableDiscoveryClient
+```
+
+### OpenFeign使用
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+```
+
+```java
+// 编写接口
+@FeignClient("catmall-coupon") # 微服务名
+public interface CouponFeign {
+    @GetMapping("/coupon/coupon/member/list")
+    R memberList();
+}
+
+// 主启动类
+@EnableFeignClients(basePackages = "edu.dlut.catmall.member.feign")
+```
+
+### Nacos配置中心
+
+```xml
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+</dependency>
+```
+
+```properties
+# bootstrap.properties 启动优先级高于
+spring.application.name=catmall-coupon
+spring.cloud.nacos.config.server-addr=localhost:8848
+```
+
+```java
+// Controller 动态刷新
+@RefreshScope
+```
+
+在`nacos`配置中心添加配置文件 `servicename.properties`
+
+- 命名空间、配置集、配置集ID、配置分组
+
+### Spring Cloud Gateway
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-gateway</artifactId>
 </dependency>
 ```
 

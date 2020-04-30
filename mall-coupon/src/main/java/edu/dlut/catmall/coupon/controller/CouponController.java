@@ -4,11 +4,8 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.web.bind.annotation.*;
 
 import edu.dlut.catmall.coupon.entity.CouponEntity;
 import edu.dlut.catmall.coupon.service.CouponService;
@@ -24,11 +21,20 @@ import edu.dlut.common.utils.R;
  * @email qq740567396@gmail.com
  * @date 2020-04-30 09:39:48
  */
+@RefreshScope
 @RestController
 @RequestMapping("coupon/coupon")
 public class CouponController {
+
     @Autowired
     private CouponService couponService;
+
+    @GetMapping("/member/list")
+    public R memberList() {
+        CouponEntity couponEntity = new CouponEntity();
+        couponEntity.setCouponName("满100减10");
+        return R.ok().put("coupons", Arrays.asList(couponEntity));
+    }
 
     /**
      * 列表

@@ -3,12 +3,9 @@ package edu.dlut.catmall.member.controller;
 import java.util.Arrays;
 import java.util.Map;
 
+import edu.dlut.catmall.member.feign.CouponFeign;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import edu.dlut.catmall.member.entity.MemberEntity;
 import edu.dlut.catmall.member.service.MemberService;
@@ -29,6 +26,17 @@ import edu.dlut.common.utils.R;
 public class MemberController {
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private CouponFeign couponFeign;
+
+    @GetMapping("/coupons")
+    public R test() {
+        MemberEntity memberEntity = new MemberEntity();
+        memberEntity.setNickname("Raymond");
+        R memberCoupons = couponFeign.memberList();
+        return R.ok().put("member", memberEntity).put("coupons", memberCoupons.get("coupons"));
+    }
 
     /**
      * 列表
