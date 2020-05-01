@@ -285,3 +285,135 @@ spring.cloud.nacos.config.server-addr=localhost:8848
 </dependency>
 ```
 
+## 三级菜单
+
+下次遇到再需要生成菜单的业务逻辑，这个基本上就可以直接拿来使用了。
+
+### 业务逻辑层
+
+```mysql
+CREATE TABLE `pms_category` (
+  `cat_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '分类id',
+  `name` char(50) DEFAULT NULL COMMENT '分类名称',
+  `parent_cid` bigint(20) DEFAULT NULL COMMENT '父分类id',
+  `cat_level` int(11) DEFAULT NULL COMMENT '层级',
+  `show_status` tinyint(4) DEFAULT NULL COMMENT '是否显示[0-不显示，1显示]',
+  `sort` int(11) DEFAULT NULL COMMENT '排序',
+  `icon` char(255) DEFAULT NULL COMMENT '图标地址',
+  `product_unit` char(50) DEFAULT NULL COMMENT '计量单位',
+  `product_count` int(11) DEFAULT NULL COMMENT '商品数量',
+  PRIMARY KEY (`cat_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1433 DEFAULT CHARSET=utf8mb4 COMMENT='商品三级分类';
+```
+
+```java
+@Data
+@TableName("pms_category")
+public class CategoryEntity implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * 分类id
+	 */
+	@TableId
+	private Long catId;
+	/**
+	 * 分类名称
+	 */
+	private String name;
+	/**
+	 * 父分类id
+	 */
+	private Long parentCid;
+	/**
+	 * 层级
+	 */
+	private Integer catLevel;
+	/**
+	 * 是否显示[0-不显示，1显示]
+	 */
+	private Integer showStatus;
+	/**
+	 * 排序
+	 */
+	private Integer sort;
+	/**
+	 * 图标地址
+	 */
+	private String icon;
+	/**
+	 * 计量单位
+	 */
+	private String productUnit;
+	/**
+	 * 商品数量
+	 */
+	private Integer productCount;
+
+	@TableField(exist = false)
+	private List<CategoryEntity> children;
+
+}
+```
+
+```java
+public List<CategoryEntity> listWithTree() {
+    // 这个类继承了 ServiceImpl
+    // 1. 查出所有分类列表
+    List<CategoryEntity> entities = baseMapper.selectList(null); // 传入 null 代表查询所有
+
+    // 2. 组装成树形结构
+    List<CategoryEntity> levelMenu = entities.stream()
+        .filter(categoryEntity -> categoryEntity.getParentCid() == 0)
+        .map(menu -> {
+            menu.setChildren(getChildren(menu, entities));
+            return menu;
+        }).sorted((m1, m2) -> m1.getSort() == null ? 0 : m1.getSort() - (m2.getSort() == null ? 0 : m2.getSort())).collect(Collectors.toList());
+    return levelMenu;
+}
+
+/**
+     * 递归查找所有菜单的子菜单
+     *
+     * @param root
+     * @param all
+     * @return
+     */
+private List<CategoryEntity> getChildren(CategoryEntity root, List<CategoryEntity> all) {
+    List<CategoryEntity> children = all.stream()
+        .filter(categoryEntity -> categoryEntity.getParentCid() == root.getCatId())
+        .map(categoryEntity -> {
+            categoryEntity.setChildren(getChildren(categoryEntity, all));
+            return categoryEntity;
+        })
+        .sorted((m1, m2) -> m1.getSort() == null ? 0 : m1.getSort() - (m2.getSort() == null ? 0 : m2.getSort()))
+        .collect(Collectors.toList());
+    return children;
+}
+```
+
+### 跨域问题
+
+除了添加这个，还要把`renren-fast`自带的跨域配置给关闭掉。
+
+```java
+@Configuration
+public class CORSConfig {
+
+    @Bean
+    public CorsWebFilter corsWebFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+
+        corsConfiguration.addAllowedHeader("*");
+        corsConfiguration.addAllowedMethod("*");
+        corsConfiguration.addAllowedOrigin("*");
+        corsConfiguration.setAllowCredentials(true);
+
+        source.registerCorsConfiguration("/**", corsConfiguration);
+        return new CorsWebFilter(source);
+    }
+
+}
+```
+### MyBatis Plus 逻辑删除
