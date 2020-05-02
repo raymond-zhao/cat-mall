@@ -417,3 +417,123 @@ public class CORSConfig {
 }
 ```
 ### MyBatis Plus 逻辑删除
+
+## 使用逆向工程前后端代码
+
+### 自定义调整
+
+- 放权`src/util/index.js`
+
+```javascript
+export function isAuth (key) {
+  // return JSON.parse(sessionStorage.getItem('permissions') || '[]').indexOf(key) !== -1 || false
+  return true
+}
+```
+
+
+
+- 可选关闭`eslint `，路径`build/webpack.base.conf.js`
+
+```javascript
+const createLintingRule = () => ({
+  test: /\.(js|vue)$/,
+  loader: 'eslint-loader',
+  enforce: 'pre',
+  include: [resolve('src'), resolve('test')],
+  options: {
+    formatter: require('eslint-friendly-formatter'),
+    emitWarning: !config.dev.showEslintErrorsInOverlay
+  }
+})
+```
+
+- 表格--自定义列模板
+
+### OSS对象存储
+
+- 开通服务，设置子账户，给子账户授权。
+
+- [Spring Cloud Alibaba OSS](https://help.aliyun.com/document_detail/91868.html?spm=a2c4g.11186623.2.15.17706e28EQIQWR#concept-ahk-rfz-2fb)
+
+```xml
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alicloud-oss</artifactId>
+</dependency>
+```
+
+- [OSS获取服务器签名](https://help.aliyun.com/document_detail/91868.html?spm=a2c4g.11186623.2.15.57276e2888qoXF#concept-ahk-rfz-2fb)
+
+### 数据验证
+
+- [前端表单验证-自定义验证](https://element.eleme.cn/#/zh-CN/component/form)
+- 后端`JSR303`校验
+  - 添加校验注解  `javax.validation.constraints`，定义自己的校验规则。
+  - `Controller @Valid`，校验的`Bean`之后添加`BindingResult`可以获得校验结果。
+  - 编写异常处理类，`@RestControllerAdvice`，使用`ExceptionHandler`标注方法可以处理的异常。
+- 统一异常处理类
+- `JSR`分组校验
+  - 创建标记接口`public interface UpdateGroup{},public interface AddGroup{}`
+  - 注解分组`@NotBlank(message = "品牌名不能为空", groups = {AddGroup.class, UpdateGroup.class})`
+  - `Controller`添加`@Validated({UpdateGroup.class})`
+  - 默认没有指定分组的校验注解，在分组校验情况下不生效。
+- 自定义注解校验
+  - 编写一个自定义的校验注解
+  - 编写一个自定义的校验器 `ConstraintValidator`
+  - 关联自定义的校验器和自定义的校验注解
+
+```java
+@Documented
+@Constraint(validatedBy = { ListValueConstraintValidator.class})
+@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
+@Retention(RUNTIME)
+public @interface ListValue {
+
+    String message() default "{edu.dlut.common.valid.ListValue.message}";
+
+    Class<?>[] groups() default { };
+
+    Class<? extends Payload>[] payload() default { };
+
+    int[] value() default { };
+
+}
+```
+
+```java
+public class ListValueConstraintValidator implements ConstraintValidator<ListValue,Integer> {
+
+    private Set<Integer> set = new HashSet<>();
+    //初始化方法
+    @Override
+    public void initialize(ListValue constraintAnnotation) {
+        int[] value = constraintAnnotation.value();
+        for (int val : value) {
+            set.add(val);
+        }
+    }
+
+    /**
+     *
+     * @param value 需要校验的值
+     * @param context
+     * @return
+     */
+    @Override
+    public boolean isValid(Integer value, ConstraintValidatorContext context) {
+        return set.contains(value);
+    }
+}
+```
+
+```properties
+# ValidationMessages.properties
+edu.dlut.common.valid.ListValue.message=必须提交指定的值
+```
+
+```java
+@ListValue(value = {0, 1}, groups = {AddGroup.class, UpdateStatusGroup.class})
+```
+
+## SKU与SPU
