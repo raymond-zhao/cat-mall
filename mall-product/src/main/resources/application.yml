@@ -19,3 +19,7 @@ mybatis-plus:
       id-type: auto
       logic-delete-value: 1
       logic-not-delete-value: 0
+
+logging:
+  level:
+    edu.dlut.catmall: debug
