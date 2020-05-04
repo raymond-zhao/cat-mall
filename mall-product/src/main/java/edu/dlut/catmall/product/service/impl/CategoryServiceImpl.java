@@ -1,6 +1,17 @@
 package edu.dlut.catmall.product.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import edu.dlut.catmall.product.dao.CategoryDao;
+import edu.dlut.catmall.product.entity.CategoryEntity;
+import edu.dlut.catmall.product.service.CategoryBrandRelationService;
+import edu.dlut.catmall.product.service.CategoryService;
+import edu.dlut.common.utils.PageUtils;
+import edu.dlut.common.utils.Query;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,19 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import edu.dlut.common.utils.PageUtils;
-import edu.dlut.common.utils.Query;
-
-import edu.dlut.catmall.product.dao.CategoryDao;
-import edu.dlut.catmall.product.entity.CategoryEntity;
-import edu.dlut.catmall.product.service.CategoryService;
-
 
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
+
+    @Autowired
+    private CategoryBrandRelationService categoryBrandRelationService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -60,6 +64,18 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         List<Long> parentPath = findParentPath(catelogId, path);
         Collections.reverse(parentPath);
         return parentPath.toArray(new Long[path.size()]);
+    }
+
+    /**
+     * 级联更新所有关联数据
+     * @param category
+     */
+    @Override
+    public void updateCascade(CategoryEntity category) {
+        this.updateById(category);
+        if (!StringUtils.isEmpty(category.getName())) {
+            categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
+        }
     }
 
     private List<Long> findParentPath(Long catelogId, List<Long> path) {

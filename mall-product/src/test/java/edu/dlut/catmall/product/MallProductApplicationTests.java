@@ -3,6 +3,7 @@ package edu.dlut.catmall.product;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import edu.dlut.catmall.product.entity.BrandEntity;
 import edu.dlut.catmall.product.service.BrandService;
+import edu.dlut.catmall.product.service.CategoryBrandRelationService;
 import edu.dlut.catmall.product.service.CategoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,14 @@ class MallProductApplicationTests {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private CategoryBrandRelationService categoryBrandRelationService;
+
+    @Test
+    public void testUpdateCascade() {
+        categoryBrandRelationService.updateCategory(225L, "手机1");
+    }
 
     @Test
     public void findPath() {
