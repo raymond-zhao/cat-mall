@@ -3,7 +3,7 @@
 
 <mapper namespace="edu.dlut.catmall.product.dao.AttrAttrgroupRelationDao">
 
-	<!-- 可根据自己的需求，是否要使用 -->
+    <!-- 可根据自己的需求，是否要使用 -->
     <resultMap type="edu.dlut.catmall.product.entity.AttrAttrgroupRelationEntity" id="attrAttrgroupRelationMap">
         <result property="id" column="id"/>
         <result property="attrId" column="attr_id"/>
@@ -11,5 +11,12 @@
         <result property="attrSort" column="attr_sort"/>
     </resultMap>
 
+    <delete id="deleteBatchRelation">
+
+        DELETE FROM `pms_attr_attrgroup_relation` WHERE
+        <foreach collection="entities" item="item" separator=" OR ">
+            (attr_id=#{item.attrId} AND attr_group_id=#{item.attrGroupId})
+        </foreach>
+    </delete>
 
 </mapper>

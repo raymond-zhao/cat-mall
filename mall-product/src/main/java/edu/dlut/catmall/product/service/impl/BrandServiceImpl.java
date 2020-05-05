@@ -12,6 +12,7 @@ import edu.dlut.common.utils.Query;
 import edu.dlut.catmall.product.dao.BrandDao;
 import edu.dlut.catmall.product.entity.BrandEntity;
 import edu.dlut.catmall.product.service.BrandService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -38,6 +39,7 @@ public class BrandServiceImpl extends ServiceImpl<BrandDao, BrandEntity> impleme
         return new PageUtils(page);
     }
 
+    @Transactional
     @Override
     public void updateDetail(BrandEntity brand) {
         // 必须保证冗余字段的数据一致性

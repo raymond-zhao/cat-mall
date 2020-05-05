@@ -11,6 +11,7 @@ import edu.dlut.common.utils.PageUtils;
 import edu.dlut.common.utils.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -70,6 +71,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
      * 级联更新所有关联数据
      * @param category
      */
+    @Transactional
     @Override
     public void updateCascade(CategoryEntity category) {
         this.updateById(category);
