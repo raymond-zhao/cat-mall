@@ -4,11 +4,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import edu.dlut.catmall.coupon.entity.SpuBoundsEntity;
 import edu.dlut.catmall.coupon.service.SpuBoundsService;
@@ -27,6 +23,7 @@ import edu.dlut.common.utils.R;
 @RestController
 @RequestMapping("coupon/spubounds")
 public class SpuBoundsController {
+
     @Autowired
     private SpuBoundsService spuBoundsService;
 
@@ -56,11 +53,10 @@ public class SpuBoundsController {
     /**
      * 保存
      */
-    @RequestMapping("/save")
+    @PostMapping("/save")
     // @RequiresPermissions("coupon:spubounds:save")
     public R save(@RequestBody SpuBoundsEntity spuBounds){
 		spuBoundsService.save(spuBounds);
-
         return R.ok();
     }
 

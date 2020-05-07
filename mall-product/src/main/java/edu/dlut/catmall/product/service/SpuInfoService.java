@@ -1,6 +1,7 @@
 package edu.dlut.catmall.product.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import edu.dlut.catmall.product.vo.SpuSaveVO;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.catmall.product.entity.SpuInfoEntity;
 
@@ -16,5 +17,11 @@ import java.util.Map;
 public interface SpuInfoService extends IService<SpuInfoEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    void saveSpuInfo(SpuSaveVO vo);
+
+    PageUtils queryPageByCondition(Map<String, Object> params);
+
+    void saveBaseSpuInfo(SpuInfoEntity infoEntity);
 }
 

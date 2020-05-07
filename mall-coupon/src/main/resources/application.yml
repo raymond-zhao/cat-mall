@@ -12,7 +12,7 @@ spring:
       discovery:
         server-addr: localhost:8848
   application:
-    name: catmall-coupon
+    name: mall-coupon
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml

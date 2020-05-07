@@ -10,24 +10,32 @@ import edu.dlut.catmall.product.dao.CategoryDao;
 import edu.dlut.catmall.product.entity.BrandEntity;
 import edu.dlut.catmall.product.entity.CategoryBrandRelationEntity;
 import edu.dlut.catmall.product.entity.CategoryEntity;
+import edu.dlut.catmall.product.service.BrandService;
 import edu.dlut.catmall.product.service.CategoryBrandRelationService;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.common.utils.Query;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service("categoryBrandRelationService")
 public class CategoryBrandRelationServiceImpl extends ServiceImpl<CategoryBrandRelationDao, CategoryBrandRelationEntity> implements CategoryBrandRelationService {
 
-    @Autowired
+    @Resource
     private CategoryDao categoryDao;
 
-    @Autowired
+    @Resource
     private BrandDao brandDao;
+
+    @Resource
+    private CategoryBrandRelationDao relationDao;
+
+    @Resource
+    private BrandService brandService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -67,6 +75,20 @@ public class CategoryBrandRelationServiceImpl extends ServiceImpl<CategoryBrandR
         categoryBrandRelationEntity.setCatelogId(catId);
         categoryBrandRelationEntity.setCatelogName(name);
         this.update(categoryBrandRelationEntity, new UpdateWrapper<CategoryBrandRelationEntity>().eq("catelog_id", catId));
+    }
+
+    @Override
+    public List<BrandEntity> getBrandsByCatId(Long catId) {
+        List<CategoryBrandRelationEntity> entities = relationDao.selectList(new QueryWrapper<CategoryBrandRelationEntity>().eq("catelog_id", catId));
+
+        List<BrandEntity> collect = entities.stream().map(item -> {
+           Long brandId = item.getBrandId();
+           BrandEntity brandEntity = brandService.getById(brandId);
+           return brandEntity;
+        }).collect(Collectors.toList());
+
+        return collect;
+
     }
 
 }
