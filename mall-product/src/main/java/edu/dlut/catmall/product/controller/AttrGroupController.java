@@ -44,7 +44,7 @@ public class AttrGroupController {
     private AttrAttrgroupRelationService relationService;
 
     @PostMapping("/attr/relation")
-    public R addRelation(@RequestBody List<AttrGroupRelationVO> vos){
+    public R addRelation(@RequestBody List<AttrGroupRelationVO> vos) {
         relationService.saveBatch(vos);
         return R.ok();
     }
@@ -53,7 +53,7 @@ public class AttrGroupController {
     public R getAttrGroupWithAttrs(@PathVariable("catelogId") Long cateLogId) {
         // 1 查出当前分类下所有的属性分组
         // 2 查出每个属性分组的所有属性
-        List<AttrGroupWithAttrsVO> vos =  attrGroupService.getAttrGroupWithAttrsByCatelogId(cateLogId);
+        List<AttrGroupWithAttrsVO> vos = attrGroupService.getAttrGroupWithAttrsByCatelogId(cateLogId);
         return R.ok().put("data", vos);
     }
 

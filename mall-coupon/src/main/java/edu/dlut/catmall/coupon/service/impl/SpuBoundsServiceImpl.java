@@ -20,7 +20,7 @@ public class SpuBoundsServiceImpl extends ServiceImpl<SpuBoundsDao, SpuBoundsEnt
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<SpuBoundsEntity> page = this.page(
                 new Query<SpuBoundsEntity>().getPage(params),
-                new QueryWrapper<SpuBoundsEntity>()
+                new QueryWrapper<>()
         );
 
         return new PageUtils(page);

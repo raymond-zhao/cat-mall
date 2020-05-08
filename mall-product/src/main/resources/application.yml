@@ -25,9 +25,3 @@ mybatis-plus:
 logging:
   level:
     edu.dlut.catmall: debug
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 160000000
-        readTimeout: 160000000
