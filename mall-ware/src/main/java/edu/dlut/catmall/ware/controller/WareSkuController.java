@@ -3,7 +3,6 @@ package edu.dlut.catmall.ware.controller;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +14,7 @@ import edu.dlut.catmall.ware.service.WareSkuService;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.common.utils.R;
 
+import javax.annotation.Resource;
 
 
 /**
@@ -27,7 +27,8 @@ import edu.dlut.common.utils.R;
 @RestController
 @RequestMapping("ware/waresku")
 public class WareSkuController {
-    @Autowired
+
+    @Resource
     private WareSkuService wareSkuService;
 
     /**

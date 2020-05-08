@@ -10,7 +10,7 @@ spring:
             - RewritePath=/api/(?<segment>.*),/$\{segment}
 
         - id: ware_route
-          uri: lb://gulimall-ware
+          uri: lb://mall-ware
           predicates:
             - Path=/api/ware/**
           filters:
