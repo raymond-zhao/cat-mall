@@ -1,11 +1,13 @@
 package edu.dlut.catmall.ware.service.impl;
 
 import edu.dlut.catmall.ware.feign.ProductFeignService;
+import edu.dlut.catmall.ware.vo.SkuHasStockVO;
 import edu.dlut.common.utils.R;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -78,6 +80,19 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         } else {
             wareSkuDao.addStock(skuId, wareId, skuNum);
         }
+    }
+
+    @Override
+    public List<SkuHasStockVO> getSkuHasStock(List<Long> skuIds) {
+        List<SkuHasStockVO> collect = skuIds.stream().map(skuId -> {
+            SkuHasStockVO vo = new SkuHasStockVO();
+            // 查询当前 sku 的库存
+            Long count = baseMapper.getSkuStock(skuId);
+            vo.setSkuId(skuId);
+            vo.setHasStock(count == null ? false : count > 0);
+            return vo;
+        }).collect(Collectors.toList());
+        return collect;
     }
 
 }

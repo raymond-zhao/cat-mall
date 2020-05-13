@@ -70,6 +70,8 @@ $ docker run -p 6379:6379 --name redis -v /mydata/redis/data:/data \
 -v /mydata/redis/conf/redis.conf:/etc/redis/redis.conf \
 -d redis redis-server /etc/redis/redis.conf
 $ docker ps
+$ docker run --restart=always # 随机自启
+$ docker update --restart=always <CONTAINER ID> # 随机自启
 $ docker exec -it redis redis-cli
 ```
 
@@ -537,3 +539,174 @@ edu.dlut.common.valid.ListValue.message=必须提交指定的值
 ```
 
 ## SKU与SPU
+
+`SPU: Standard Product Unit` （标准产品单位）
+
+ SPU是商品信息聚合的最小单位，是一组可复用、易检索的标准化信息的集合，该集合描述了一个产品的特性。通俗点讲，属性值、特性相同的商品就可以称为一个SPU。
+ 例如：`iPhone 11`就是一个SPU，与商家，与颜色、款式、套餐都无关。
+
+`SKU: Stock Keeping Unit`(库存量单位) SKU即库存进出计量的单位， 可以是以件、盒、托盘等为单位。
+ SKU是物理上不可分割的最小存货单元。在使用时要根据不同业态，不同管理模式来处理。在服装、鞋类商品中使用最多最普遍。
+ 例如：`iPhone 11`的颜色(深空灰等)，存储容量(64GB 256GB)
+
+# 分布式高级篇-微服务架构
+
+## ElasticSearch
+
+Docker
+
+```shell
+$ docker pull elasticsearch:7.4.2 # 存储和检索数据
+$ dock pull kibana:7.4.2 # 可视化检索数据
+```
+
+```shell
+$ mkdir -p /mydata/elasticsearch/config
+$ mkdir -p /mydata/elasticsearch/data
+$ echo "http.host:0.0.0.0" >> /mydata/elasticsearch/config/elasticsearch.yml
+$ docker run --name elasticsearch -p 9200:9200 \
+-e "discovery.type=single-node" \
+-e ES_JAVA_OPTS="-Xms128m -Xmx128m" \
+-v /mydata/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml \
+-v /mydata/elasticsearch/data:/usr/share/elasticsearch/data \
+-v /mydata/elasticsearch/plugins:/usr/share/elasticsearch/plugins \
+-d elasticsearch:7.4.2
+$ chmod -R 777 /mydata/elasticsearch
+```
+
+```shell
+$ docker run --name kibana -e ELASTICSEARCH_HOSTS=http://xxx.xx.xx.xxx:9200 -p 5601:5601 -d kibana:7.4.2
+# 其中IP地址一定要改为自己机器或服务器的IP
+```
+
+本机
+
+```shell
+$ brew tap elastic/tap
+$ brew install elastic/tap/elasticsearch-full
+$ elasticsearch
+$ brew services start elastic/tap/elasticsearch-full # 开机自启 可选
+$ brew install kibana/tap/kibana-full
+$ kibana
+$ brew services start elastic/tap/kibana-full # 开机自启 可选
+
+# ik 分词 
+$ /usr/local/var/elasticsearch/plugins/ik/config
+```
+
+### 倒排索引
+
+### 学习手册
+
+[ElasticSearch Documentation](https://www.elastic.co/guide/index.html)
+
+#### _cat
+
+```json
+GET/_cat/nodes
+GET/_cat/health
+GET/_cat/master
+GET/_cat/indices // 查看所有索引
+```
+
+#### 索引文档
+
+```json
+// 保存一条数据 保存在哪个索引的哪个类型下 指定用哪一个标识
+PUT customer/external/1 // PUT 和 POST 均可 PUT必须带ID，POST可带可不带
+{
+  "name": John Snow
+}
+```
+
+### 整合Spring Boot
+
+[客户端](https://www.elastic.co/guide/en/elasticsearch/client/index.html)
+
+### kibana 创建sku索引
+
+```json
+# 视频里是 catalogId 数据库是 catelogId 选择了与数据库一致
+# 视频里是 catalogName 数据库是 catelogName 选择了与数据库一致
+# 以后的检索中这里可能会出现不一致
+# nested 避免扁平化处理
+PUT product
+{
+  "mappings": {
+    "properties": {
+      "skuId": {
+        "type": "long"
+      },
+      "spuId": {
+        "type": "keyword"
+      },
+      "skuTitle": {
+        "type": "text",
+        "analyzer": "ik_smart"
+      },
+      "skuPrice": {
+        "type": "keyword"
+      },
+      "skuImg": {
+        "type": "keyword",
+        "index": false,
+        "doc_values": false
+      },
+      "saleCount": {
+        "type": "long"
+      },
+      "hasStock": {
+        "type": "boolean"
+      },
+      "hotScore": {
+        "type": "long"
+      },
+      "brandId": {
+        "type": "long"
+      },
+      "catelogId": {
+        "type": "long"
+      },
+      "catelogName": {
+        "type": "keyword",
+        "index": false,
+        "doc_values": false
+      },
+      "brandName": {
+        "type": "keyword",
+        "index": false,
+        "doc_values": false
+      },
+      "brandImg": {
+        "type": "keyword",
+        "index": false,
+        "doc_values": false
+      },
+      "attrs": {
+        "type": "nested",
+        "properties": {
+          "attrId": {
+            "type": "long"
+          },
+          "attrName": {
+            "type": "keyword",
+            "index": false,
+            "doc_values": false
+          },
+          "attrValue": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}
+
+// 执行结果
+{
+  "acknowledged" : true,
+  "shards_acknowledged" : true,
+  "index" : "product"
+}
+```
+

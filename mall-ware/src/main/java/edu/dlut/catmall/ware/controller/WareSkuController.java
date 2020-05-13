@@ -1,13 +1,11 @@
 package edu.dlut.catmall.ware.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import edu.dlut.catmall.ware.vo.SkuHasStockVO;
+import org.springframework.web.bind.annotation.*;
 
 import edu.dlut.catmall.ware.entity.WareSkuEntity;
 import edu.dlut.catmall.ware.service.WareSkuService;
@@ -30,6 +28,14 @@ public class WareSkuController {
 
     @Resource
     private WareSkuService wareSkuService;
+
+    @PostMapping("/hasstock")
+    public R<List<SkuHasStockVO>> getSkusHasStock(@RequestBody List<Long> skuIds) {
+        List<SkuHasStockVO> vos = wareSkuService.getSkuHasStock(skuIds);
+        R<List<SkuHasStockVO>> r = new R<>();
+        r.setData(vos);
+        return r;
+    }
 
     /**
      * 列表
