@@ -730,5 +730,53 @@ PUT product
 - 页面都在`templates`下直接访问
 - `SpringBoot`访问项目时会默认寻找`index.html`
 
+## Nginx
 
+```shell
+Docroot is: /usr/local/var/www
+
+The default port has been set in /usr/local/etc/nginx/nginx.conf to 8080 so that
+nginx can run without sudo.
+
+nginx will load all files in /usr/local/etc/nginx/servers/.
+
+To have launchd start nginx now and restart at login:
+  brew services start nginx
+Or, if you don't want/need a background service you can just run:
+  nginx
+```
+
+```
+
+#user  nobody;
+worker_processes  1;
+
+#pid        logs/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    upstream catmall{
+       server 127.0.0.1:8888;
+    }
+
+    server {
+        listen       80;
+        server_name  catmall.com;
+
+        location / {
+	        proxy_set_header HOST $host;
+	        proxy_pass http://catmall;
+            #root   html;
+            #index  index.html index.htm;
+        }
+    }
+
+    include servers/*;
+}
+```
 

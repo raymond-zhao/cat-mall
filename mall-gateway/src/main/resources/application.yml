@@ -36,3 +36,8 @@ spring:
             - Path=/api/**
           filters:
             - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}
+
+        - id: mall_host_route
+          uri: lb://mall-product
+          predicates:
+            - Host=**.catmall.com
