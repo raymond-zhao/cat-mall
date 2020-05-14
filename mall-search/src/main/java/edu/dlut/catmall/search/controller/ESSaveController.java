@@ -30,7 +30,7 @@ public class ESSaveController {
     @PostMapping("/product")
     public R productStatusUp(@RequestBody List<ESSkuModel> esSkuModels) {
 
-        boolean result = false;
+        boolean result;
 
         try {
             result = productSaveService.productStatusUp(esSkuModels);
@@ -39,7 +39,7 @@ public class ESSaveController {
             return R.error(BizCodeEnum.PRODUCT_UP_EXCEPTION.getCode(), BizCodeEnum.PRODUCT_UP_EXCEPTION.getMsg());
         }
 
-        if (result) {
+        if (!result) {
             return R.ok();
         } else {
             return R.error(BizCodeEnum.PRODUCT_UP_EXCEPTION.getCode(), BizCodeEnum.PRODUCT_UP_EXCEPTION.getMsg());

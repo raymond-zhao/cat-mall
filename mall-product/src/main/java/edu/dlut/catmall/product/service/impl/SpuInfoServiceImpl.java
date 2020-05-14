@@ -1,5 +1,6 @@
 package edu.dlut.catmall.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
 import edu.dlut.catmall.product.entity.*;
 import edu.dlut.catmall.product.feign.CouponFeignService;
 import edu.dlut.catmall.product.feign.SearchFeignService;
@@ -196,6 +197,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         this.baseMapper.insert(infoEntity);
     }
 
+    @Transactional
     @Override
     public void up(Long spuId) {
         // 1 查出当前 spuId 对应的所有 sku 信息，品牌的名字
@@ -222,8 +224,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         // TODO 1 发送远程调用 在仓库系统中查询是否有库存
         Map<Long, Boolean> stockMap = null;
         try {
-            R<List<SkuHasStockVO>> skusHasStock = wareFeignService.getSkusHasStock(skuIdList);
-            stockMap = skusHasStock.getData().stream().collect(Collectors.toMap(SkuHasStockVO::getSkuId, SkuHasStockVO::getHasStock));
+            R r = wareFeignService.getSkusHasStock(skuIdList);
+            TypeReference<List<SkuHasStockVO>> typeReference = new TypeReference<List<SkuHasStockVO>>() {};
+            stockMap = r.getData(typeReference).stream().collect(Collectors.toMap(SkuHasStockVO::getSkuId, SkuHasStockVO::getHasStock));
         } catch (Exception e) {
             log.error("库存服务查询异常，原因：", e);
         }
@@ -255,9 +258,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                     BrandEntity brandEntity = brandService.getById(esSkuModel.getBrandId());
                     esSkuModel.setBrandName(brandEntity.getName());
                     esSkuModel.setBrandImg(brandEntity.getLogo());
-
-                    CategoryEntity categoryEntity = categoryService.getById(esSkuModel.getCatelogId());
-                    esSkuModel.setCatelogName(categoryEntity.getName());
+                    CategoryEntity categoryEntity = categoryService.getById(esSkuModel.getCatalogId());
+                    esSkuModel.setCatalogName(categoryEntity.getName());
 
                     // 设置检索属性
                     esSkuModel.setAttrs(attrsList);

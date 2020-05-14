@@ -1,6 +1,7 @@
 package edu.dlut.common.to.es;
 
 import lombok.Data;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
  * DESCRIPTION:
  **/
 @Data
+@ToString
 public class ESSkuModel {
 
     private Long skuId;
@@ -35,9 +37,9 @@ public class ESSkuModel {
 
     private String brandImg;
 
-    private Long catelogId;
+    private Long catalogId;
 
-    private String catelogName;
+    private String catalogName;
 
     private List<Attrs> attrs;
 
