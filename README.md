@@ -626,10 +626,6 @@ PUT customer/external/1 // PUT 和 POST 均可 PUT必须带ID，POST可带可不
 ### kibana 创建sku索引
 
 ```json
-# 视频里是 catalogId 数据库是 catelogId 选择了与数据库一致
-# 视频里是 catalogName 数据库是 catelogName 选择了与数据库一致
-# 以后的检索中这里可能会出现不一致
-# nested 避免扁平化处理
 PUT product
 {
   "mappings": {
@@ -664,10 +660,10 @@ PUT product
       "brandId": {
         "type": "long"
       },
-      "catelogId": {
+      "catalogId": {
         "type": "long"
       },
-      "catelogName": {
+      "catalogName": {
         "type": "keyword",
         "index": false,
         "doc_values": false
@@ -709,4 +705,30 @@ PUT product
   "index" : "product"
 }
 ```
+
+### Feign调用流程
+
+- 视频135
+
+```
+/**
+ * Feign 调用流程
+ * 1. 构造请求数据 将对象转为 JSON
+ *      RequestTemplate 
+ * 2. 发送请求进行之星(执行成功会解码相应数据)
+ *     executeAndDecode(template)
+ * 3. 执行请求会有重试机制
+ */
+```
+
+## 商城业务-首页渲染
+
+### 整合Thymeleaf
+
+- 关闭缓存`spring.thymeleaf.cache=false`
+- 静态资源都放在`static`文件夹下就可以按照路径直接访问
+- 页面都在`templates`下直接访问
+- `SpringBoot`访问项目时会默认寻找`index.html`
+
+
 

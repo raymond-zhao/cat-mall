@@ -7,11 +7,13 @@ import edu.dlut.catmall.product.dao.CategoryDao;
 import edu.dlut.catmall.product.entity.CategoryEntity;
 import edu.dlut.catmall.product.service.CategoryBrandRelationService;
 import edu.dlut.catmall.product.service.CategoryService;
+import edu.dlut.catmall.product.vo.Catelog2VO;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.common.utils.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -69,6 +71,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     /**
      * 级联更新所有关联数据
+     *
      * @param category
      */
     @Transactional
@@ -78,6 +81,36 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         if (!StringUtils.isEmpty(category.getName())) {
             categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
         }
+    }
+
+    @Override
+    public List<CategoryEntity> getLevel1Categories() {
+        return baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
+    }
+
+    @Override
+    public Map<String, List<Catelog2VO>> getCatalogJson() {
+        List<CategoryEntity> level1Categories = getLevel1Categories();
+        Map<String, List<Catelog2VO>> parentCid = level1Categories.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+            List<CategoryEntity> categoryEntities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", v.getCatId()));
+            List<Catelog2VO> catelog2VOS = null;
+            if (!CollectionUtils.isEmpty(categoryEntities)) {
+                catelog2VOS = categoryEntities.stream().map(l2 -> {
+                    Catelog2VO catelog2VO = new Catelog2VO(v.getCatId().toString(), null, l2.getCatId().toString(), l2.getName());
+                    List<CategoryEntity> level3Catalog = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", l2.getCatId()));
+                    if (!CollectionUtils.isEmpty(level3Catalog)) {
+                        List<Catelog2VO.Catelog3VO> collect = level3Catalog.stream().map(l3 -> {
+                            Catelog2VO.Catelog3VO catelog3VO = new Catelog2VO.Catelog3VO(l2.getCatId().toString(), l3.getCatId().toString(), l3.getName());
+                            return catelog3VO;
+                        }).collect(Collectors.toList());
+                        catelog2VO.setCatalog3List(collect);
+                    }
+                    return catelog2VO;
+                }).collect(Collectors.toList());
+            }
+            return catelog2VOS;
+        }));
+        return parentCid;
     }
 
     private List<Long> findParentPath(Long catelogId, List<Long> path) {

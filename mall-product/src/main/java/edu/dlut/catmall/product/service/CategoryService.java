@@ -1,6 +1,7 @@
 package edu.dlut.catmall.product.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import edu.dlut.catmall.product.vo.Catelog2VO;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.catmall.product.entity.CategoryEntity;
 
@@ -31,5 +32,9 @@ public interface CategoryService extends IService<CategoryEntity> {
     Long[] findCatelogPath(Long catelogId);
 
     void updateCascade(CategoryEntity category);
+
+    List<CategoryEntity> getLevel1Categories();
+
+    Map<String, List<Catelog2VO>> getCatalogJson();
 }
 

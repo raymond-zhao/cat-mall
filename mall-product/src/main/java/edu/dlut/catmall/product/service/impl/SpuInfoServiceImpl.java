@@ -268,6 +268,14 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                 }).collect(Collectors.toList());
 
         // TODO 5 将数据发送给 es 进行保存 mall-search
+        /**
+         * Feign 调用流程
+         * 1. 构造请求数据 将对象转为 JSON
+         *      RequestTemplate
+         * 2. 发送请求进行之星(执行成功会解码相应数据)
+         *     executeAndDecode(template)
+         * 3. 执行请求会有重试机制
+         */
         R r = searchFeignService.productStatusUp(upProducts);
         if (r.getCode() == 0) {
             // TODO 6 修改SPU状态
