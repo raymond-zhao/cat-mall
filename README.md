@@ -730,7 +730,7 @@ PUT product
 - 页面都在`templates`下直接访问
 - `SpringBoot`访问项目时会默认寻找`index.html`
 
-## Nginx
+## Nginx域名配置
 
 ```shell
 Docroot is: /usr/local/var/www
@@ -745,6 +745,8 @@ To have launchd start nginx now and restart at login:
 Or, if you don't want/need a background service you can just run:
   nginx
 ```
+
+- `Nginx`代理给网关的时候，会丢失请求的`host`信息,手动设置`proxy_set_header Host $host`
 
 ```
 
@@ -777,6 +779,83 @@ http {
     }
 
     include servers/*;
+}
+```
+
+## 性能压测
+
+### 基本概念
+
+- HPS(Hits Per Second): 每秒点击次数
+- TPS(Transaction Per Second)
+- QPS(Query Per Scond)
+- 最大响应时间
+- 最少响应时间
+- 90%响应时间
+
+### JVM
+
+- `jconsole`
+- `jvisualvm` 安装插件 `visualgc`
+- [visualvm插件更新地址](https://visualvm.github.io/pluginscenters.html)
+
+### Apache JMeter
+
+[NON_GUI](https://jmeter.apache.org/usermanual/get-started.html#non_gui)
+
+```shell
+================================================================================
+Don't use GUI mode for load testing !, only for Test creation and Test debugging.
+For load testing, use CLI Mode (was NON GUI):
+   jmeter -n -t [jmx file] -l [results file] -e -o [Path to web report folder]
+& increase Java Heap to meet your test requirements:
+   Modify current env variable HEAP="-Xms1g -Xmx1g -XX:MaxMetaspaceSize=256m" in the jmeter batch file
+Check : https://jmeter.apache.org/usermanual/best-practices.html
+================================================================================
+```
+
+```shell
+$ jmeter -n -t testplan/RedisLock.jmx -l testplan/result/result.txt -e -o testplan/webreport
+```
+
+```shell
+-n
+This specifies JMeter is to run in cli mode
+-t
+[name of JMX file that contains the Test Plan].
+-l
+[name of JTL file to log sample results to].
+-j
+[name of JMeter run log file].
+-r
+Run the test in the servers specified by the JMeter property "remote_hosts"
+-R
+[list of remote servers] Run the test in the specified remote servers
+-g
+[path to CSV file] generate report dashboard only
+-e
+generate report dashboard after load test
+-o
+output folder where to generate the report dashboard after load test. Folder must not exist or be empty
+The script also lets you specify the optional firewall/proxy server information:
+-H
+[proxy server hostname or ip address]
+-P
+[proxy server port]
+```
+
+### Nginx动静分离
+
+- 将项目中`static/`下的静态资源移动到`nginx`服务器中，`mac`为`/usr/local/var/www`
+
+- 替换`index.html`中的文件路径
+- 配置`nginx`
+- 重载配置`nginx -s reload`
+
+```
+// 在server块中添加
+location /static/ {
+    root /usr/local/var/www;
 }
 ```
 
