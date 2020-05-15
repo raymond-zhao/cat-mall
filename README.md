@@ -865,7 +865,7 @@ location /static/ {
 - 索引
 - 逻辑优化
 
-## 缓存
+## Redis缓存
 
 缓存逻辑：先查缓存，缓存有则直接返回，缓存无则查数据库，然后将数据库的查询结果放入缓存以便下次使用。
 
@@ -953,4 +953,40 @@ public Map<String, List<Catelog2VO>> getCatalogJson() {
 String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
                 stringRedisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Collections.singletonList("lock"), uuid);
 ```
+
+## Redisson
+
+[Redisson-GitHub Wiki](https://github.com/redisson/redisson/wiki/目录)
+
+### 看门狗
+
+```java
+RLock lock = redissonClient.getLock("my-lock");
+lock,lock();
+```
+
+- 阻塞式等待，默认加的锁都是 30s 时间
+- 锁的自动续期，如果业务超长，如果业务运行时间较长，运行期间自动给锁续上新的 30s，不用担心业务时间过长(大于锁的过期时间)导致锁被删掉。
+- 加锁的业务只要运行完成就不会给当前锁续期，即使不手动解锁，锁也会在 30s 后自动删除。
+
+```java
+lock.lock(10, TimeUnit.SECONDS);
+```
+
+- 在锁时间到了以后，不会自动续期。
+- 如果我们传递了锁的超时时间，就发送给 redis 执行脚本，进行占锁，默认超时就是我们指定的时间
+- 如果我们未指定锁的超时时间，就使用 30*1000[**Lockwatchdog Timeout 看门狗的默认时间**]
+- 只要占锁成功，就会启动一个定时任务【**重新给锁设置过期时间，新的过期时间就是看门狗的默认时间，每隔10s自动续期成30s**】， internalLockLeaseTime[看门狗时间/3 = 10s]
+
+### 缓存数据一致性
+
+- 双写模式：修改数据后从数据库再查一遍放入缓存
+  - 脏数据问题：部分脏数据，缓存过期后又能得到最新的正确数据
+- 失效模式：修改数据后删除缓存，等待下一次请求到来时再重新查询后放入缓存
+- 解决： `canal`
+  - 使用 `canal`更新缓存
+  - 使用 `canal`解决数据易购
+- 本系统的一致性解决方案
+  - 为所有缓存数据设置过期时间，数据过期下一次查询触发主动更新。
+  - 读写数据的时候，加上分布式的读写锁。(读多写少时几乎无影响)
 

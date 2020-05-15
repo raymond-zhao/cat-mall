@@ -12,6 +12,8 @@ import edu.dlut.catmall.product.service.CategoryService;
 import edu.dlut.catmall.product.vo.Catelog2VO;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.common.utils.Query;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private RedissonClient redisson;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -131,12 +136,28 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             return catalogJsonFromDB;
         }
 
-        Map<String, List<Catelog2VO>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2VO>>>() {});
+        Map<String, List<Catelog2VO>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2VO>>>() {
+        });
         return result;
+    }
+
+    public Map<String, List<Catelog2VO>> getCatalogJsonFromDBWithRedissonLock() {
+
+        RLock lock = redisson.getLock("catalogJson-lock");
+
+        lock.lock();
+        Map<String, List<Catelog2VO>> dataFromDB;
+        try {
+            dataFromDB = getDataFromDB();
+        } finally {
+            lock.unlock();
+        }
+        return dataFromDB;
     }
 
     /**
      * Redis 实现分布式锁
+     *
      * @return
      */
     public Map<String, List<Catelog2VO>> getCatalogJsonFromDBWithRedisLock() throws InterruptedException {
