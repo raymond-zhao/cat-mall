@@ -990,3 +990,78 @@ lock.lock(10, TimeUnit.SECONDS);
   - 为所有缓存数据设置过期时间，数据过期下一次查询触发主动更新。
   - 读写数据的时候，加上分布式的读写锁。(读多写少时几乎无影响)
 
+## Spring Cache
+
+[Spring Cache Documentation](https://docs.spring.io/spring/docs/5.2.6.RELEASE/spring-framework-reference/integration.html#cache)
+
+### 常用注解
+
+- `@Cacheable`: Triggers cache population.
+- `@CacheEvict`: Triggers cache eviction. 失效模式下
+- `@CachePut`: Updates the cache without interfering with the method execution.
+- `@Caching`: Regroups multiple cache operations to be applied on a method.
+- `@CacheConfig`: Shares some common cache-related settings at class-level.
+
+### 重点类
+
+- `CacheManager`
+- `Cache`
+
+### 默认行为(`@Cacheable({"category"})`)
+
+- 如果命中缓存，方法不再被调用。
+- `key`默认自动生成`category::SimpleKey []` 
+  - 自定义接收SpEL：`@Cacheable(value = {"category"}, key= "'name'")`
+  - `@Cacheable(value = {"category"}, key = "#root.method.name")`
+- 缓存的`value`的值，默认使用`jdk`序列化机制，将序列化后的数据存到`redis`
+  - 保存为`JSON`格式原理
+  - `CacheAutoConfiguration` -> `RedisCacheConfiguration` -> 自动配置了`RedisCacheManager` -> 初始化所有的缓存 -> 每个缓存决定用什么配置 -> 如果`redisCacheConfiguration`有就用已有的，没有就用默认配置 -> 想改缓存配置，只需要给容器中存放一个`RedisCacheConfiguration`即可 -> 就会应用到当前`RedisCacheManager`管理的所有缓存分区中。
+- 默认`TTL=-1`
+  - `spring.cache.redis.time-to-live=3600000`
+- 自定义缓存配置
+
+```java
+@Configuration
+@EnableCaching
+@EnableConfigurationProperties(CacheProperties.class)
+public class MyCacheConfig {
+
+    @Bean
+    public RedisCacheConfiguration redisCacheConfiguration(CacheProperties cacheProperties) {
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
+        config = config.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()));
+        config = config.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+
+        CacheProperties.Redis redisProperties = cacheProperties.getRedis();
+
+        if (redisProperties.getTimeToLive() != null) {
+            config = config.entryTtl(redisProperties.getTimeToLive());
+        }
+        if (redisProperties.getKeyPrefix() != null) {
+            config = config.prefixKeysWith(redisProperties.getKeyPrefix());
+        }
+        if (!redisProperties.isCacheNullValues()) {
+            config = config.disableCachingNullValues();
+        }
+        if (!redisProperties.isUseKeyPrefix()) {
+            config = config.disableKeyPrefix();
+        }
+        return config;
+    }
+}
+```
+
+### `Spring Cache`总结
+
+- 读模式
+  - 缓存穿透：`cache-null-values=true`
+  - 缓存击穿：`sync=true`
+  - 缓存雪崩：`spring.cache.redis.time-to-live=时间`
+- 写模式
+  - 读写加锁
+  - 引入 `Canal` , 感知到`MySQL`的更新则去更新缓存
+  - 读多写多，直接去数据库查询
+- 总结
+  - 常规数据(度多写少，即时性，一致性要求不高的数据)，完全可以使用`Spring Cache`
+  - 特殊数据，特殊设计。
+

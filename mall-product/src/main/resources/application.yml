@@ -17,6 +17,13 @@ spring:
     cache: false
   redis:
     host: localhost
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000
+      # key-prefix: CACHE_
+      use-key-prefix: true
+      cache-null-values: true # 防止缓存穿透
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml
@@ -29,3 +36,4 @@ mybatis-plus:
 logging:
   level:
     edu.dlut.catmall: error
+
