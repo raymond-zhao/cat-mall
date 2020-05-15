@@ -859,3 +859,98 @@ location /static/ {
 }
 ```
 
+### 压测优化
+
+- JVM
+- 索引
+- 逻辑优化
+
+## 缓存
+
+缓存逻辑：先查缓存，缓存有则直接返回，缓存无则查数据库，然后将数据库的查询结果放入缓存以便下次使用。
+
+### Redis基本使用
+
+用于缓存商品分类数据
+
+- 堆外内存溢出 `OutOfDirectMemoryError`
+
+```java
+/**
+* 利用Redis进行缓存商品分类数据
+*
+* @return
+*/
+@Override
+public Map<String, List<Catelog2VO>> getCatalogJson() {
+    // TODO 产生堆外内存溢出 OutOfDirectMemoryError
+    /**
+     * 1. SpringBoot2.0之后默认使用 lettuce 作为操作 redis 的客户端，lettuce 使用 Netty 进行网络通信
+     * 2. lettuce 的 bug 导致 Netty 堆外内存溢出 -Xmx300m   Netty 如果没有指定对外内存 默认使用 JVM 设置的参数
+     *      可以通过 -Dio.netty.maxDirectMemory 设置堆外内存
+     * 解决方案：不能仅仅使用 -Dio.netty.maxDirectMemory 去调大堆外内存
+     *      1. 升级 lettuce 客户端   2. 切换使用 jedis
+     *
+     *      RedisTemplate 对 lettuce 与 jedis 均进行了封装 所以直接使用 详情见：RedisAutoConfiguration 类
+     */
+    // 给缓存中放入JSON字符串，取出JSON字符串还需要逆转为能用的对象类型
+
+    // 1. 加入缓存逻辑， 缓存中存的数据是 JSON 字符串
+    String catalogJSON = stringRedisTemplate.opsForValue().get("catalogJSON");
+    if (StringUtils.isEmpty(catalogJSON)) {
+        // 2 如果缓存未命中 则查询数据库
+        Map<String, List<Catelog2VO>> catalogJsonFromDB = getCatalogJsonFromDB();
+        // 3 查到的数据再放入缓存 将对象转为JSON放入缓存
+        String cache = JSON.toJSONString(catalogJsonFromDB);
+        stringRedisTemplate.opsForValue().set("catalogJSON", cache);
+
+        // 4 返回从数据库中查询的数据
+        return catalogJsonFromDB;
+    }
+
+    Map<String, List<Catelog2VO>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2VO>>>() {});
+    return result;
+}
+```
+
+### 缓存击穿、穿透、雪崩
+
+|   类型   | 描述                                                         | 解决                                                         |
+| :------: | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 缓存击穿 | 对于一些设置了过期时间的 key，如果这些 key 可能会在某些时间点被超高并发地访问，是一种非常“热点”的数据。如果这个 key 在大量请求同时进来前正好失效，那么所有对这个 key 的数据査询都落到db. | 加锁。大量并发只让一个去查，其他人等待，査到以后释放锁，其他人获取到锁，先查缓存，就会有数据，不用去 db |
+| 缓存穿透 | 指查询一个一定不存在的数据，由于缓存是不命中，将去查询数据库，但是数据库也无此记录，我们没有将这次查询的null写入缓存，这将导致这个不存在的数据每次请求都要到存储层去査询，失去了缓存的意义。利用不存在的数据进行攻击，数据库瞬时压力增大，最终导致崩溃 | nul 结果缓存，并加入短暂过期时间                             |
+| 缓存雪崩 | 缓存雪崩是指在我们设置缓存时 key 采用了相同的过期时间，导致缓存在某一时刻同时失效，请求全部转发到 DB, DB 瞬时压力过重雪崩。 | 原有的失效时间基础上增加一个随机值，比如 1-5 分钟随机，这样每一个缓存的过期时间的重复率就会降低，就很难引发集体失效的事件。 |
+
+### 分布式锁
+
+```java
+/**
+* SpringBoot 所有的组件在容器中默认都是单例的，使用 synchronized (this) 可以实现加锁
+*
+* 得到锁之后 应该再去缓存中确定一次，如果没有的话才需要继续查询
+*
+* 假如有100W个并发请求，首先得到锁的请求开始查询，此时其他的请求将会排队等待锁
+* 等到获得锁的时候再去执行查询，但是此时有可能前一个加锁的请求已经查询成功并且将结果添加到了缓存中
+*/
+```
+
+![分布式锁下如何加锁](https://tva1.sinaimg.cn/large/007S8ZIlly1get5dp2mdsj31hp0u0tfq.jpg)
+
+在每一个微服务中的`synchronized(this)`加锁的对象只是当前实例，但是并未对其他微服务的实例产生影响，即使每个微服务加锁后只允许一个请求，加入有8个微服务，仍然会有8个线程存在。
+
+#### 锁-时序问题
+
+**确认缓存-查询数据库-结果放入缓存** 这三个操作必须当做一个事务来执行，放在同一把锁里面完成。
+
+### Redis实现分布式锁🔐
+
+- Redis 实现分布式锁的关键
+  - 原子添加 `Boolean lockResult = stringRedisTemplate.opsForValue().setIfAbsent("lock", uuid, 300, TimeUnit.SECONDS);`
+  - 原子删除
+
+```java
+// lua 脚本
+String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+                stringRedisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Collections.singletonList("lock"), uuid);
+```
+
