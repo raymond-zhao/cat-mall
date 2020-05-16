@@ -40,4 +40,9 @@ spring:
         - id: mall_host_route
           uri: lb://mall-product
           predicates:
-            - Host=**.catmall.com
+            - Host=catmall.com
+
+        - id: mall_search_route
+          uri: lb://mall-search
+          predicates:
+            - Host=search.catmall.com

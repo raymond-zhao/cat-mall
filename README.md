@@ -1065,3 +1065,95 @@ public class MyCacheConfig {
   - 常规数据(度多写少，即时性，一致性要求不高的数据)，完全可以使用`Spring Cache`
   - 特殊数据，特殊设计。
 
+## 检索服务
+
+> 坑：在从首页点击分类名跳转到搜索页时，跳转链接在`catalogLoader.js`中，原静态资源链接为`http://search.gmall.com/`，需要改为自己在HOST文件中配置的域名。
+
+### 迁移索引`mapping`
+
+```json
+// 不要直接删除重建 会丢失已上架的商品数据
+
+PUT product
+{
+  "mappings": {
+    "properties": {
+      "skuId": {
+        "type": "long"
+      },
+      "spuId": {
+        "type": "keyword"
+      },
+      "skuTitle": {
+        "type": "text",
+        "analyzer": "ik_smart"
+      },
+      "skuPrice": {
+        "type": "keyword"
+      },
+      "skuImg": {
+        "type": "keyword"
+      },
+      "saleCount": {
+        "type": "long"
+      },
+      "hasStock": {
+        "type": "boolean"
+      },
+      "hotScore": {
+        "type": "long"
+      },
+      "brandId": {
+        "type": "long"
+      },
+      "catalogId": {
+        "type": "long"
+      },
+      "catalogName": {
+        "type": "keyword"
+      },
+      "brandName": {
+        "type": "keyword"
+      },
+      "brandImg": {
+        "type": "keyword"
+      },
+      "attrs": {
+        "type": "nested",
+        "properties": {
+          "attrId": {
+            "type": "long"
+          },
+          "attrName": {
+            "type": "keyword"
+          },
+          "attrValue": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT mall_product
+
+POST _reindex
+{
+    "source": {
+        "index": "product"
+    },
+    "dest": {
+        "index": "mall_product"
+    }
+}
+```
+
+### 构建检索请求与封装检索结果
+
+- `MallSearchServiceImpl`
+
+### 页面排序
+
+- [ ] `list.html`排序样式未完成，可参考视频`187-189`
+

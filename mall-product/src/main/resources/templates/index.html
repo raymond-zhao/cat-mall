@@ -115,7 +115,7 @@
         <input id="searchText" type="text" placeholder="" />
         <span style="background: url('/static/index/img/img_12.png') 0 -1px;"></span>
         <!--<button><i class="glyphicon"></i></button>-->
-        <a href="/static/#" ><img src="/static/index/img/img_09.png" onclick="search()" /></a>
+        <a href="javascript:search();"><img src="/static/index/img/img_09.png"/></a>
       </div>
       <div class="header_ico">
         <div class="header_gw">
@@ -607,7 +607,7 @@
 <script type="text/javascript">
   function search() {
       var keyword=$("#searchText").val()
-      window.location.href="/static/http://search.gulimall.com/search.html?keyword="+keyword;
+      window.location.href="http://search.catmall.com/list.html?keyword=" + keyword;
   }
 
 </script>
