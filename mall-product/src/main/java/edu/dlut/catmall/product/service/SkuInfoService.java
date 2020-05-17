@@ -1,6 +1,7 @@
 package edu.dlut.catmall.product.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import edu.dlut.catmall.product.vo.SkuItemVO;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.catmall.product.entity.SkuInfoEntity;
 
@@ -23,5 +24,7 @@ public interface SkuInfoService extends IService<SkuInfoEntity> {
     PageUtils queryPageByCondition(Map<String, Object> params);
 
     List<SkuInfoEntity> getSkusBySpuId(Long spuId);
+
+    SkuItemVO item(Long skuId);
 }
 

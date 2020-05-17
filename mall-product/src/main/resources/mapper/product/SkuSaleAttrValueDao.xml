@@ -3,7 +3,7 @@
 
 <mapper namespace="edu.dlut.catmall.product.dao.SkuSaleAttrValueDao">
 
-	<!-- 可根据自己的需求，是否要使用 -->
+    <!-- 可根据自己的需求，是否要使用 -->
     <resultMap type="edu.dlut.catmall.product.entity.SkuSaleAttrValueEntity" id="skuSaleAttrValueMap">
         <result property="id" column="id"/>
         <result property="skuId" column="sku_id"/>
@@ -12,6 +12,23 @@
         <result property="attrValue" column="attr_value"/>
         <result property="attrSort" column="attr_sort"/>
     </resultMap>
+
+    <resultMap id="SkuItemSaleAttrVO" type="edu.dlut.catmall.product.vo.SkuItemSaleAttrVO">
+        <result column="attr_id" property="attrId"></result>
+        <result column="attr_name" property="attrName"></result>
+        <collection property="attrValues" ofType="edu.dlut.catmall.product.vo.AttrValueWithSkuIdVO">
+            <result column="attr_value" property="attrValue"></result>
+            <result column="sku_ids" property="skuIds"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getSaleAttrsBySpuId" resultMap="SkuItemSaleAttrVO">
+        select ssav.attr_id attr_id, ssav.attr_name attr_name,ssav.attr_value, group_concat(distinct info.sku_id) sku_ids
+        from catmall_pms.pms_sku_info info
+                 left join catmall_pms.pms_sku_sale_attr_value ssav on ssav.sku_id = info.sku_id
+        where info.spu_id = #{spuId}
+        group by ssav.attr_id, ssav.attr_name, ssav.attr_value
+    </select>
 
 
 </mapper>

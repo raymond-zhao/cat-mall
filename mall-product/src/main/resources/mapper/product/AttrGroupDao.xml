@@ -3,7 +3,7 @@
 
 <mapper namespace="edu.dlut.catmall.product.dao.AttrGroupDao">
 
-	<!-- 可根据自己的需求，是否要使用 -->
+    <!-- 可根据自己的需求，是否要使用 -->
     <resultMap type="edu.dlut.catmall.product.entity.AttrGroupEntity" id="attrGroupMap">
         <result property="attrGroupId" column="attr_group_id"/>
         <result property="attrGroupName" column="attr_group_name"/>
@@ -13,5 +13,21 @@
         <result property="catelogId" column="catelog_id"/>
     </resultMap>
 
-
+    <resultMap id="spuItemAttrGroupVO" type="edu.dlut.catmall.product.vo.SpuItemAttrGroupVO">
+        <result property="groupName" column="attr_group_name"></result>
+        <collection property="attrs" ofType="edu.dlut.catmall.product.vo.Attr">
+            <result column="attr_name" property="attrName"></result>
+            <result column="attr_value" property="attrValue"></result>
+        </collection>
+    </resultMap>
+    <select id="getAttrGroupWithAttrsBySpuIdAndCatalogId"
+            resultMap="spuItemAttrGroupVO">
+        select pav.spu_id, ag.attr_group_name, ag.attr_group_id, aar.attr_id, attr.attr_name, pav.attr_value
+        from catmall_pms.pms_attr_group ag
+                 left join catmall_pms.pms_attr_attrgroup_relation aar on aar.attr_group_id = ag.attr_group_id
+                 left join catmall_pms.pms_attr attr on attr.attr_id = aar.attr_id
+                 left join catmall_pms.pms_product_attr_value pav on pav.attr_id = attr.attr_id
+        where ag.catelog_id = #{catalogId}
+          and pav.spu_id = #{spuId}
+    </select>
 </mapper>
