@@ -2,10 +2,6 @@ package edu.dlut.catmall.product.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-
-import java.io.Serializable;
-import java.util.Date;
-
 import edu.dlut.common.valid.AddGroup;
 import edu.dlut.common.valid.ListValue;
 import edu.dlut.common.valid.UpdateGroup;
@@ -14,6 +10,7 @@ import lombok.Data;
 import org.hibernate.validator.constraints.URL;
 
 import javax.validation.constraints.*;
+import java.io.Serializable;
 
 /**
  * 品牌

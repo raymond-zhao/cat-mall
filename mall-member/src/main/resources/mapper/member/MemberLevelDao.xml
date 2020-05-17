@@ -16,6 +16,9 @@
         <result property="priviledgeBirthday" column="priviledge_birthday"/>
         <result property="note" column="note"/>
     </resultMap>
+    <select id="getDefaultLevel" resultType="edu.dlut.catmall.member.entity.MemberLevelEntity">
+        select * from catmall_ums.ums_member_level where default_status=1
+    </select>
 
 
 </mapper>

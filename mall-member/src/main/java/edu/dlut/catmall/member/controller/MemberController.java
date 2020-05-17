@@ -3,7 +3,11 @@ package edu.dlut.catmall.member.controller;
 import java.util.Arrays;
 import java.util.Map;
 
+import edu.dlut.catmall.member.exception.PhoneExistException;
+import edu.dlut.catmall.member.exception.UsernameExistException;
 import edu.dlut.catmall.member.feign.CouponFeign;
+import edu.dlut.catmall.member.vo.MemberRegisterVO;
+import edu.dlut.common.exception.BizCodeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,11 +28,24 @@ import edu.dlut.common.utils.R;
 @RestController
 @RequestMapping("member/member")
 public class MemberController {
+
     @Autowired
     private MemberService memberService;
 
     @Autowired
     private CouponFeign couponFeign;
+
+    @PostMapping("/register")
+    public R register(@RequestBody MemberRegisterVO memberRegisterVO) {
+        try {
+            memberService.register(memberRegisterVO);
+        } catch (UsernameExistException e) {
+            return R.error(BizCodeEnum.USERNAME_EXIST_EXCEPTION.getCode(), BizCodeEnum.USERNAME_EXIST_EXCEPTION.getMsg());
+        } catch (PhoneExistException e) {
+            return R.error(BizCodeEnum.PHONE_EXIST_EXCEPTION.getCode(), BizCodeEnum.PHONE_EXIST_EXCEPTION.getMsg());
+        }
+        return R.ok();
+    }
 
     @GetMapping("/coupons")
     public R test() {

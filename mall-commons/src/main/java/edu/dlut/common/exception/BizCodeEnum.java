@@ -17,6 +17,7 @@ import lombok.Getter;
  *  *  12: 订单
  *  *  13: 购物车
  *  *  14: 物流
+ *  *  15: 用户
  **/
 @Getter
 public enum BizCodeEnum {
@@ -25,7 +26,14 @@ public enum BizCodeEnum {
 
     VALID_EXCEPTION(10001,"参数格式校验失败"),
 
-    PRODUCT_UP_EXCEPTION(11000, "商品上架异常");
+    SMS_CODE_EXCEPTION(10002,"短信频率太快"),
+
+    PRODUCT_UP_EXCEPTION(11000, "商品上架异常"),
+
+    USERNAME_EXIST_EXCEPTION(15001, "用户名已存在"),
+
+    PHONE_EXIST_EXCEPTION(15002, "手机号已存在")
+    ;
 
     private int code;
 

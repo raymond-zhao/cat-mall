@@ -12,5 +12,6 @@ spring:
       oss:
         endpoint: oss-cn-beijing.aliyuncs.com
         bucket: catmall
+
   application:
     name: mall-third-party
