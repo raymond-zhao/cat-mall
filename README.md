@@ -1193,4 +1193,10 @@ POST _reindex
 ### 短信验证
 
 - 接口防刷
-- 
+
+### OAuth2.0之微博登录
+
+[微博开放平台](https://open.weibo.com/)
+
+[微博OAuth2.0文档](https://open.weibo.com/wiki/%E6%8E%88%E6%9D%83%E6%9C%BA%E5%88%B6%E8%AF%B4%E6%98%8E)
+

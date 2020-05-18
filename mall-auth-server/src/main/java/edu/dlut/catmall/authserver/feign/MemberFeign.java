@@ -1,5 +1,6 @@
 package edu.dlut.catmall.authserver.feign;
 
+import edu.dlut.catmall.authserver.vo.SocialUser;
 import edu.dlut.catmall.authserver.vo.UserLoginVO;
 import edu.dlut.catmall.authserver.vo.UserRegisterVO;
 import edu.dlut.common.utils.R;
@@ -20,5 +21,8 @@ public interface MemberFeign {
 
     @PostMapping("/member/member/login")
     R login(@RequestBody UserLoginVO userLoginVO);
+
+    @PostMapping("/member/member/oauth2/login")
+    R oauthLogin(@RequestBody SocialUser socialUser) throws Exception;
 
 }

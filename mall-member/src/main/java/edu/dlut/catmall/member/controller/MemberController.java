@@ -8,6 +8,7 @@ import edu.dlut.catmall.member.exception.UsernameExistException;
 import edu.dlut.catmall.member.feign.CouponFeign;
 import edu.dlut.catmall.member.vo.MemberLoginVO;
 import edu.dlut.catmall.member.vo.MemberRegisterVO;
+import edu.dlut.catmall.member.vo.SocialUser;
 import edu.dlut.common.exception.BizCodeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
@@ -47,6 +48,15 @@ public class MemberController {
             return R.error(BizCodeEnum.PHONE_EXIST_EXCEPTION.getCode(), BizCodeEnum.PHONE_EXIST_EXCEPTION.getMsg());
         }
         return R.ok();
+    }
+
+    @PostMapping("/oauth2/login")
+    public R oauthLogin(@RequestBody SocialUser socialUser) throws Exception {
+        MemberEntity memberEntity = memberService.login(socialUser);
+        if (!ObjectUtils.isEmpty(memberEntity))
+            return R.ok().setData(memberEntity);
+        else
+            return R.error(BizCodeEnum.LOGIN_EXCEPTION.getCode(), BizCodeEnum.LOGIN_EXCEPTION.getMsg());
     }
 
     @PostMapping("/login")

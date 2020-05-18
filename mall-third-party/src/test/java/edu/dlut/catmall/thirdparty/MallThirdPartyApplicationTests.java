@@ -29,7 +29,7 @@ class MallThirdPartyApplicationTests {
 
     @Test
     public void sendSMS() {
-        smsComponent.sendSMSCode("", "123456");
+        smsComponent.sendSMSCode("17866568604", "123456");
     }
 
     @Test
