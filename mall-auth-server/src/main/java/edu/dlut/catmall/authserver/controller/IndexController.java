@@ -3,6 +3,7 @@ package edu.dlut.catmall.authserver.controller;
 import com.alibaba.fastjson.TypeReference;
 import edu.dlut.catmall.authserver.feign.MemberFeign;
 import edu.dlut.catmall.authserver.feign.ThirdPartyFeign;
+import edu.dlut.catmall.authserver.vo.UserLoginVO;
 import edu.dlut.catmall.authserver.vo.UserRegisterVO;
 import edu.dlut.common.constant.AuthServerConstant;
 import edu.dlut.common.exception.BizCodeEnum;
@@ -81,10 +82,10 @@ public class IndexController {
                 stringRedisTemplate.delete(AuthServerConstant.SMS_CODE_CACHE_PREFIX + vo.getPhone());
                 R register = memberFeign.register(vo);
                 if (register.getCode() == 0) {
-                    return "redirect:http://auth.catmall.com//login.html";
+                    return "redirect:http://auth.catmall.com/login.html";
                 } else {
                     Map<String, String> errors = new HashMap<>();
-                    errors.put("msg", register.getData(new TypeReference<String>(){}));
+                    errors.put("msg", register.getData("msg", new TypeReference<String>(){}));
                     redirectAttributes.addFlashAttribute("errors", errors);
                     return "redirect:http://auth.catmall.com/register.html";
                 }
@@ -102,5 +103,17 @@ public class IndexController {
         }
     }
 
+    @PostMapping("/login")
+    public String login(UserLoginVO userLoginVO, RedirectAttributes redirectAttributes) {
+        R login = memberFeign.login(userLoginVO);
+        if (login.getCode() != 0) {
+            return "redirect:http://catmall.com";
+        } else {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("msg", login.getData("msg", new TypeReference<String>(){}));
+            redirectAttributes.addAttribute("errors", errors);
+            return "redirect:http://auth.catmall.com/login.html";
+        }
+    }
 
 }

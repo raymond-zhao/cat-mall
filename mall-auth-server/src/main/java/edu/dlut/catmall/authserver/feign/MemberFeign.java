@@ -1,5 +1,6 @@
 package edu.dlut.catmall.authserver.feign;
 
+import edu.dlut.catmall.authserver.vo.UserLoginVO;
 import edu.dlut.catmall.authserver.vo.UserRegisterVO;
 import edu.dlut.common.utils.R;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -16,5 +17,8 @@ public interface MemberFeign {
 
     @PostMapping("/member/member/register")
     R register(@RequestBody UserRegisterVO userRegisterVO);
+
+    @PostMapping("/member/member/login")
+    R login(@RequestBody UserLoginVO userLoginVO);
 
 }

@@ -32,7 +32,9 @@ public enum BizCodeEnum {
 
     USERNAME_EXIST_EXCEPTION(15001, "用户名已存在"),
 
-    PHONE_EXIST_EXCEPTION(15002, "手机号已存在")
+    PHONE_EXIST_EXCEPTION(15002, "手机号已存在"),
+
+    LOGIN_EXCEPTION(15003, "用户名或密码错误")
     ;
 
     private int code;

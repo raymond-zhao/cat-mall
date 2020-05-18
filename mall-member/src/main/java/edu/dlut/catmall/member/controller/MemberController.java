@@ -6,9 +6,11 @@ import java.util.Map;
 import edu.dlut.catmall.member.exception.PhoneExistException;
 import edu.dlut.catmall.member.exception.UsernameExistException;
 import edu.dlut.catmall.member.feign.CouponFeign;
+import edu.dlut.catmall.member.vo.MemberLoginVO;
 import edu.dlut.catmall.member.vo.MemberRegisterVO;
 import edu.dlut.common.exception.BizCodeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import edu.dlut.catmall.member.entity.MemberEntity;
@@ -45,6 +47,15 @@ public class MemberController {
             return R.error(BizCodeEnum.PHONE_EXIST_EXCEPTION.getCode(), BizCodeEnum.PHONE_EXIST_EXCEPTION.getMsg());
         }
         return R.ok();
+    }
+
+    @PostMapping("/login")
+    public R login(@RequestBody MemberLoginVO memberLoginVO) {
+        MemberEntity memberEntity = memberService.login(memberLoginVO);
+        if (!ObjectUtils.isEmpty(memberEntity))
+            return R.ok();
+        else
+            return R.error(BizCodeEnum.LOGIN_EXCEPTION.getCode(), BizCodeEnum.LOGIN_EXCEPTION.getMsg());
     }
 
     @GetMapping("/coupons")

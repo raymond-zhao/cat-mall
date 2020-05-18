@@ -4,6 +4,7 @@ import edu.dlut.catmall.member.dao.MemberLevelDao;
 import edu.dlut.catmall.member.entity.MemberLevelEntity;
 import edu.dlut.catmall.member.exception.PhoneExistException;
 import edu.dlut.catmall.member.exception.UsernameExistException;
+import edu.dlut.catmall.member.vo.MemberLoginVO;
 import edu.dlut.catmall.member.vo.MemberRegisterVO;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import edu.dlut.common.utils.Query;
 import edu.dlut.catmall.member.dao.MemberDao;
 import edu.dlut.catmall.member.entity.MemberEntity;
 import edu.dlut.catmall.member.service.MemberService;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 
@@ -52,6 +54,27 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         memberEntity.setPassword(encode);
 
         this.baseMapper.insert(memberEntity);
+    }
+
+    @Override
+    public MemberEntity login(MemberLoginVO memberLoginVO) {
+        String account = memberLoginVO.getAccount();
+        String password = memberLoginVO.getPassword();
+
+        // 去数据库查询
+        MemberEntity memberEntity = this.baseMapper.selectOne(new QueryWrapper<MemberEntity>()
+                .eq("username", account).or().eq("mobile", account));
+        if (!ObjectUtils.isEmpty(memberEntity)) {
+            String passwordDB = memberEntity.getPassword();
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            if (passwordEncoder.matches(password, passwordDB)) {
+                return memberEntity;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
     private void checkUsernameUnique(String username) throws UsernameExistException {

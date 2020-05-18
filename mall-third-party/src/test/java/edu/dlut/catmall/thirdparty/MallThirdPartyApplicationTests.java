@@ -29,20 +29,23 @@ class MallThirdPartyApplicationTests {
 
     @Test
     public void sendSMS() {
+        smsComponent.sendSMSCode("", "123456");
     }
 
     @Test
     public void smsTest() {
-        String host = "https://zwp.market.alicloudapi.com";
-        String path = "/sms/sendv2";
-        String method = "GET";
+        String host = "https://smssend.shumaidata.com";
+        String path = "/sms/send";
+        String method = "POST";
         String appcode = "1fd04cc57b6c404cbbb45319889b875d";
         Map<String, String> headers = new HashMap<>();
-        // 最后在header中的格式(中间是英文空格)为Authorization:APPCODE 83359fd73fe94948385f570e3c139105
+        //最后在header中的格式(中间是英文空格)为Authorization:APPCODE 83359fd73fe94948385f570e3c139105
         headers.put("Authorization", "APPCODE " + appcode);
-        Map<String, String> query = new HashMap<>();
-        query.put("content", "【云通知】您的验证码是666666。如非本人操作，请忽略本短信");
-        query.put("mobile", "");
+        Map<String, String> querys = new HashMap<>();
+        querys.put("receive", "");
+        querys.put("tag", "123456");
+        querys.put("templateId", "M4F8845237");
+        Map<String, String> bodys = new HashMap<>();
 
         try {
             /**
@@ -54,10 +57,10 @@ class MallThirdPartyApplicationTests {
              * 相应的依赖请参照
              * https://github.com/aliyun/api-gateway-demo-sign-java/blob/master/pom.xml
              */
-            HttpResponse response = HttpUtils.doGet(host, path, method, headers, query);
+            HttpResponse response = HttpUtils.doPost(host, path, method, headers, querys, bodys);
             System.out.println(response.toString());
-            // 获取response的body
-            // System.out.println(EntityUtils.toString(response.getEntity()));
+            //获取response的body
+            //System.out.println(EntityUtils.toString(response.getEntity()));
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,6 +1,7 @@
 package edu.dlut.catmall.member.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import edu.dlut.catmall.member.vo.MemberLoginVO;
 import edu.dlut.catmall.member.vo.MemberRegisterVO;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.catmall.member.entity.MemberEntity;
@@ -19,5 +20,7 @@ public interface MemberService extends IService<MemberEntity> {
     PageUtils queryPage(Map<String, Object> params);
 
     void register(MemberRegisterVO memberRegisterVO);
+
+    MemberEntity login(MemberLoginVO memberLoginVO);
 }
 
