@@ -57,6 +57,10 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         checkPhoneUnique(memberRegisterVO.getPhone());
         checkUsernameUnique(memberRegisterVO.getUsername());
 
+        memberEntity.setMobile(memberRegisterVO.getPhone());
+        memberEntity.setUsername(memberRegisterVO.getUsername());
+        memberEntity.setNickname(memberRegisterVO.getUsername());
+
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         String encode = passwordEncoder.encode(memberRegisterVO.getPassword());
         memberEntity.setPassword(encode);

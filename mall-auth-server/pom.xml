@@ -21,6 +21,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
+        </dependency>
+        <dependency>
             <groupId>edu.dlut.catmall</groupId>
             <artifactId>mall-commons</artifactId>
             <version>0.0.1-SNAPSHOT</version>

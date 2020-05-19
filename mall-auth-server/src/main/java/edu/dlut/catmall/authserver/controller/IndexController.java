@@ -8,9 +8,11 @@ import edu.dlut.catmall.authserver.vo.UserRegisterVO;
 import edu.dlut.common.constant.AuthServerConstant;
 import edu.dlut.common.exception.BizCodeEnum;
 import edu.dlut.common.utils.R;
+import edu.dlut.common.vo.MemberResponseVO;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,8 +50,6 @@ public class IndexController {
     @GetMapping("/sms/send")
     @ResponseBody
     public R sendSMS(@RequestParam("phone") String phone) {
-
-        // TODO 1 接口防刷
 
         String redisCode = stringRedisTemplate.opsForValue().get(AuthServerConstant.SMS_CODE_CACHE_PREFIX + phone);
         if (!StringUtils.isEmpty(redisCode)) {
@@ -103,10 +104,19 @@ public class IndexController {
         }
     }
 
+    @GetMapping("/login.html")
+    public String loginPage(HttpSession session) {
+        Object attribute = session.getAttribute(AuthServerConstant.LOGIN_USER);
+        return !ObjectUtils.isEmpty(attribute) ? "redirect:http://catmall.com" : "login";
+    }
+
     @PostMapping("/login")
-    public String login(UserLoginVO userLoginVO, RedirectAttributes redirectAttributes) {
+    public String login(UserLoginVO userLoginVO, RedirectAttributes redirectAttributes,
+                        HttpSession session) {
         R login = memberFeign.login(userLoginVO);
         if (login.getCode() != 0) {
+            MemberResponseVO loginUser = login.getData(new TypeReference<MemberResponseVO>() {});
+            session.setAttribute(AuthServerConstant.LOGIN_USER, loginUser);
             return "redirect:http://catmall.com";
         } else {
             Map<String, String> errors = new HashMap<>();

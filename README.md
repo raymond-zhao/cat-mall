@@ -1200,3 +1200,25 @@ POST _reindex
 
 [微博OAuth2.0文档](https://open.weibo.com/wiki/%E6%8E%88%E6%9D%83%E6%9C%BA%E5%88%B6%E8%AF%B4%E6%98%8E)
 
+> 微博登录视频坑:
+>
+> 微博回调域名: `auth.catmall.com`，而不是`catmall.com`
+>
+> `OAuthController`: `doPost`方法后三个参数需要的是`Map`，均不能写视频中的`null`，需要传入空的`Map`，而且`Map`的顺序有变化，在构建请求条件时应该将`map`传入查询参数`querys`中，而不是请求体`bodys`
+>
+> `HttpResponse response = HttpUtils.doPost("https://api.weibo.com", "/oauth2/access_token", "post", new HashMap<>(), map, new HashMap<>());`
+
+## Spring Session
+
+[Spring Session Documentation](https://docs.spring.io/spring-session/docs/2.3.0.RELEASE/reference/html5/#introduction)
+
+### 对象JDK序列化
+
+### Spring Session核心原理
+
+- `@EnableRedisHttpSession`注解中导入了`RedisHttpSessionConfiguration`类
+  - 给容器中添加了一个组件：`SessionRepository` -> `RedisOperationsSessionRepository`，利用`Redis`来进行`Session`的增删改查等各种操作。
+- `SessionRepositoryFilter`: `Session`存储过滤器，每个请求都必须经过`filter`
+  - 创建的时候，自动从容器中获取`SessionRepository`
+  - 原始的`request,response`都被包装成`SessionRepositoryRequestWrapper.SessionRepositoryResponseWrapper`
+  - 使用装饰者模式进行包装

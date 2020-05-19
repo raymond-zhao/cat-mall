@@ -95,10 +95,11 @@
   					</b>
         <ul>
           <li>
-            <a href="http://auth.catmall.com/login.html">你好，请登录</a>
+            <a th:if="${session.loginUser != null}">欢迎, [[${session.loginUser.nickname}]]</a>
+            <a th:if="${session.loginUser == null}" href="http://auth.catmall.com/login.html">你好，请登录</a>
           </li>
           <li>
-            <a href="http://auth.catmall.com/register.html" class="li_2">免费注册</a>
+            <a th:if="${session.loginUser == null}" href="http://auth.catmall.com/register.html" class="li_2">免费注册</a>
           </li>
           <span>|</span>
           <li>

@@ -1,4 +1,4 @@
-package edu.dlut.catmall.authserver.vo;
+package edu.dlut.common.vo;
 
 import lombok.Data;
 

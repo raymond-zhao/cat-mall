@@ -58,8 +58,13 @@
                 </li>
             </ul>
             <ul class="header_ul_right">
-                <li style="border: 0;"><a href="../登录页面\index.html" class="aa">你好，请登录</a></li>
-                <li><a href="../注册页面\index.html" style="color: red;">免费注册</a> |</li>
+                <li style="border: 0;">
+                    <a th:if="${session.loginUser == null}" href="http://auth.catmall.com/login.html" class="aa">你好，请登录</a>
+                    <a th:if="${session.loginUser != null}">欢迎, [[${session.loginUser.nickname}]]</a>
+                </li>
+                <li>
+                    <a th:if="${session.loginUser == null}" href="http://auth.catmall.com/register.html" style="color: red;">免费注册</a>
+                </li>
                 <li><a href="javascript:;" class="aa">我的订单</a> |</li>
                 <li class="jingdong"><a href="javascript:;">我的京东</a><span class="glyphicon glyphicon-menu-down">|</span>
                     <ol class="jingdong_ol">
@@ -253,7 +258,7 @@
     <nav>
         <div class="nav_min">
             <div class="nav_top">
-                <div class="nav_top_one"><a href="#"><img src="/static/item/img/111.png"/></a></div>
+                <div class="nav_top_one"><a href="http://catmall.com"><img src="/static/item/img/111.png"/></a></div>
                 <div class="nav_top_two"><input type="text"/>
                     <button>搜索</button>
                 </div>

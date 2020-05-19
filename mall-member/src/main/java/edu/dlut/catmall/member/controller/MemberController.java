@@ -63,7 +63,7 @@ public class MemberController {
     public R login(@RequestBody MemberLoginVO memberLoginVO) {
         MemberEntity memberEntity = memberService.login(memberLoginVO);
         if (!ObjectUtils.isEmpty(memberEntity))
-            return R.ok();
+            return R.ok().setData(memberEntity);
         else
             return R.error(BizCodeEnum.LOGIN_EXCEPTION.getCode(), BizCodeEnum.LOGIN_EXCEPTION.getMsg());
     }
