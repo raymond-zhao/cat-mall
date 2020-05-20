@@ -721,7 +721,7 @@ PUT product
  */
 ```
 
-## 商城业务-首页渲染
+## 首页渲染
 
 ### 整合Thymeleaf
 
@@ -1222,3 +1222,54 @@ POST _reindex
   - 创建的时候，自动从容器中获取`SessionRepository`
   - 原始的`request,response`都被包装成`SessionRepositoryRequestWrapper.SessionRepositoryResponseWrapper`
   - 使用装饰者模式进行包装
+
+### 单点登录
+
+- [ ] 待完成
+
+## 购物车
+
+- 用户可以在登录状态下将商品加入[在线购物车/用户购物车]
+  - 放入`MongoDB`
+  - 放入`MySQL`
+  - 放入`Redis`(采用)，登录以后，会将临时购物车中的数据合并过来
+- 用户可以在未登录状态下将商品加入[离线购物车/游客购物车]
+  - 放入`localStorage`
+  - 放入`Cookie`
+  - 放入`WebSQL`
+  - 放入`Redis`(采用)，即使浏览器关闭，临时购物车数据都在。
+
+- 用户可以使用购物车一起结算下单
+- 用户可以添加商品到购物车
+- 用户可以查询自己购物车
+- 用户可以选中商品
+- 用户可以在购物车中修改购买的商品数量
+- 用户可以在购物车中删除商品
+- 在购物车中展示优惠信息
+- 提示购物车商品价格变化
+
+> 京东给每个用户生成一个值类似于UUID的`user-key`，有效期一个月，存储在`Cookie`，浏览器保存以后，每次访问都会戴上这个`cookie`.
+>
+> 登录后：`session`有用户信息
+>
+> 未登录：`cookie`中的`user-key`
+>
+> 第一次使用时，如果没有临时用户，帮忙创建一个临时用户。
+
+### ThreadLocal用户身份鉴别
+
+- `public class CartInterceptor implements HandlerInterceptor{}`重写`preHandle, postHandle` ，不用加`@Component`
+- 添加`MallWebConfig`
+
+```java
+@Configuration
+public class MallWebConfig implements WebMvcConfigurer {
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new CartInterceptor()).addPathPatterns("/**");
+    }
+}
+```
+
+
+

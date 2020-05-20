@@ -29,6 +29,9 @@
         where info.spu_id = #{spuId}
         group by ssav.attr_id, ssav.attr_name, ssav.attr_value
     </select>
+    <select id="getSkuSaleAttrValuesAsStringList" resultType="java.lang.String">
+        select concat(attr_name, ':', attr_value) from catmall_pms.pms_sku_sale_attr_value where sku_id=#{skuId}
+    </select>
 
 
 </mapper>

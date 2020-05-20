@@ -51,3 +51,8 @@ spring:
           uri: lb://mall-auth
           predicates:
             - Host=auth.catmall.com
+
+        - id: mall_cart_route
+          uri: lb://mall-cart
+          predicates:
+            - Host=cart.catmall.com

@@ -23,7 +23,7 @@ public class SkuSaleAttrValueServiceImpl extends ServiceImpl<SkuSaleAttrValueDao
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<SkuSaleAttrValueEntity> page = this.page(
                 new Query<SkuSaleAttrValueEntity>().getPage(params),
-                new QueryWrapper<SkuSaleAttrValueEntity>()
+                new QueryWrapper<>()
         );
 
         return new PageUtils(page);
@@ -32,6 +32,11 @@ public class SkuSaleAttrValueServiceImpl extends ServiceImpl<SkuSaleAttrValueDao
     @Override
     public List<SkuItemSaleAttrVO> getSaleAttrsBySpuId(Long spuId) {
         return this.baseMapper.getSaleAttrsBySpuId(spuId);
+    }
+
+    @Override
+    public List<String> getSkuSaleAttrValuesAsStringList(Long skuId) {
+        return this.baseMapper.getSkuSaleAttrValuesAsStringList(skuId);
     }
 
 }
