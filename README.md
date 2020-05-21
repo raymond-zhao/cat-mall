@@ -1273,3 +1273,72 @@ public class MallWebConfig implements WebMvcConfigurer {
 
 
 
+## 消息队列-RabbitMQ
+
+### 应用场景
+
+- 异步处理
+- 应用解耦
+- 流量控制(削峰、填谷)
+
+### 类型
+
+- 队列(点对点)
+- 订阅
+
+### 执行标准
+
+- JMS
+- AMQP
+
+### 安装
+
+- Docker
+  - 4369,25672: Erlang 发现 & 集群端口
+  - 5672,5671: AMQP端口
+  - 15672: Web管理后台端口
+  - 1883,8883: MQTT协议端口
+  - 61613, 61614: STOMP协议端口
+
+```shell
+$ docker pull rabbitmq
+$ docker run -d --name rabbitmq -p 5671:5671 -p 5672:5672 -p 4369:4369 -p 25672:25672 -p 15671:15671 -p 15672:15672 rabbitmq:management
+```
+
+- 手动下载安装
+
+```shell
+$ cd 安装目录
+$ # 启用rabbitmq management插件
+$ sudo sbin/rabbitmq-plugins enable rabbitmq_management
+$ # 配置环境变量(可选)
+$ rabbitmq-server -detached # 后台启动
+$ rabbitmqctl status # 查看状态 浏览器内输入 http://localhost:15672,默认的用户名密码都是guest
+$ rabbitmqctl stop # 关闭
+```
+
+```
+# Setting for RabbitMQ
+export RABBIT_HOME=/Users/raymond/Documents/GitHub/rabbitmq_server-3.8.3
+export PATH=$PATH:$RABBIT_HOME/sbin
+```
+
+### 发送消息
+
+- `@RabbitListener`
+- `@RabbitHandler`
+
+如果是传输对象的话，传输的对象必须实现序列化接口，默认的序列化方式是JDK序列化，但是也可以手动指定序列化的方式。
+
+```java
+@Configuration
+public class MyRabbitConfig {
+    @Bean
+    public MessageConverter messageConverter() {
+        return new Jackson2JsonMessageConverter();
+    }
+}
+```
+
+### 可靠投递
+

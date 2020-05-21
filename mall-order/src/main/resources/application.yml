@@ -7,9 +7,22 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/catmall_oms?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
     password: root
+  rabbitmq:
+    host: 121.199.11.223
+    port: 5672
+    virtual-host: /
+    publisher-confirm-type: correlated
+    # publisher-confirms: true
+    publisher-returns: true
+    template:
+      mandatory: true
+    listener:
+      simple:
+        acknowledge-mode: manual
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml
   global-config:
     db-config:
       id-type: auto
+
