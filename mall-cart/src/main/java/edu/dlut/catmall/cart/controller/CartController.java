@@ -33,19 +33,19 @@ public class CartController {
     @GetMapping("/countItem")
     public String countItem(@RequestParam("skuId") Long skuId, @RequestParam("num") Integer num) {
         cartService.countItem(skuId, num);
-        return "redirect:http://cart.catmall.com/addToCartSuccess.html";
+        return "redirect:http://cart.catmall.com/cart.html";
     }
 
     @GetMapping("/deleteItem")
     public String deleteItem(@RequestParam("skuId") Long skuId) {
         cartService.deleteItem(skuId);
-        return "redirect:http://cart.catmall.com/addToCartSuccess.html";
+        return "redirect:http://cart.catmall.com/cart.html";
     }
 
     @GetMapping("/checkItem")
     public String checkItem(@RequestParam("skuId") Long skuId, @RequestParam("checked") Integer checked) {
         cartService.checkItem(skuId, checked);
-        return "redirect:http://cart.catmall.com/addToCartSuccess.html";
+        return "redirect:http://cart.catmall.com/cart.html";
     }
 
     @GetMapping("/addToCart")
@@ -58,7 +58,7 @@ public class CartController {
     }
 
     /**
-     * 解决页面舒心重复提交的问题
+     * 解决页面刷新重复提交的问题
      *
      * @param skuId
      * @param model

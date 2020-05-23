@@ -19,6 +19,17 @@ spring:
     listener:
       simple:
         acknowledge-mode: manual
+  thymeleaf:
+    cache: false
+  application:
+    name: mall-order
+  cloud:
+    nacos:
+      server-addr: localhost
+  session:
+    store-type: redis
+  redis:
+    host: localhost
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml
@@ -26,3 +37,8 @@ mybatis-plus:
     db-config:
       id-type: auto
 
+mall:
+  threads:
+    core-pool-size: 20
+    max-pool-size: 200
+    keep-alive-time: 10

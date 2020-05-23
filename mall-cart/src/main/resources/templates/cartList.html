@@ -62,14 +62,13 @@
         </div>
     </div>
 </div>
+
 <div class="One_BdyShop">
     <div class="OneBdy_box">
         <div class="One_tabTop">
             <div class="One_Topleft">
-                <span>全部商品 </span>
-
+                <span>全部商品</span>
             </div>
-
         </div>
         <div class="One_ShopTop">
             <ul>
@@ -83,18 +82,21 @@
         </div>
 
         <div class="One_ShopCon">
-            <h2 th:if="${cart.getItems() == null}">
-                购物车为空 <a href="http://catmall.com">去购物?</a>
-            </h2>
+            <ul>
+                <a th:if="${cart.getItems() == null}" href="http://catmall.com">购物车为空 去购物?</a>
+            </ul>
             <ul th:if="${cart.getItems() != null}">
                 <li th:each="cartItem:${cart.getItems()}">
+                    <div></div>
                     <div>
                         <ol>
-                            <li><input type="checkbox" th:attr="skuId=${cartItem.skuId}" class="itemChecked"
-                                       th:checked="${cartItem.checked}"></li>
+                            <li>
+                                <input type="checkbox" th:attr="skuId=${cartItem.skuId}" class="itemChecked"
+                                       th:checked="${cartItem.checked}">
+                            </li>
                             <li>
                                 <dt><img th:src="${cartItem.image}"></dt>
-                                <dd style="width: 300px;">
+                                <dd>
                                     <p>
                                         <span th:text="${cartItem.title}">TCL 55A950C 55英寸32核</span>
                                         <br/>
@@ -108,23 +110,20 @@
                                     ￥4599.00</p>
                             </li>
                             <li>
-                                <p th:attr="skuId=${cartItem.skuId}">
+                                <p th:attr="skuId=${cartItem.skuId}" style="width: 100px;">
                                     <span class="countOpsBtn">-</span>
                                     <span class="countOpsNum" th:text="${cartItem.count}">5</span>
                                     <span class="countOpsBtn">+</span>
                                 </p>
-
                             </li>
                             <li style="font-weight:bold"><p class="zj">￥[[${#numbers.formatDecimal(cartItem.totalPrice,
                                 3, 2)}]]</p></li>
                             <li>
                                 <p class="deleteItemBtn" th:attr="skuId=${cartItem.skuId}">删除</p>
-
                             </li>
                         </ol>
                     </div>
                 </li>
-
             </ul>
         </div>
         <div class="One_ShopFootBuy fix1">
@@ -781,8 +780,9 @@
     $(".deleteItemBtn").click(function () {
         deleteId = $(this).attr("skuId");
     });
+
     function deleteItem() {
-        location.href = "http://catmall.com/deleteItem?skuId" + deleteId;
+        location.href = "http://cart.catmall.com/deleteItem?skuId=" + deleteId;
     }
 
 </script>
