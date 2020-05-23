@@ -1,10 +1,12 @@
 package edu.dlut.catmall.order.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import edu.dlut.catmall.order.vo.OrderConfirmVO;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.catmall.order.entity.OrderEntity;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * 订单
@@ -16,5 +18,8 @@ import java.util.Map;
 public interface OrderService extends IService<OrderEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    OrderConfirmVO confirmOrder() throws ExecutionException, InterruptedException;
+
 }
 

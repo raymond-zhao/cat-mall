@@ -3,6 +3,7 @@ package edu.dlut.catmall.cart.service;
 import edu.dlut.catmall.cart.vo.Cart;
 import edu.dlut.catmall.cart.vo.CartItem;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -34,4 +35,6 @@ public interface CartService {
     void countItem(Long skuId, Integer num);
 
     void deleteItem(Long skuId);
+
+    List<CartItem> getUserCartItems();
 }

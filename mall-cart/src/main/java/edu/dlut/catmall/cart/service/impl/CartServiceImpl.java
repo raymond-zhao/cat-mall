@@ -19,6 +19,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -55,7 +56,8 @@ public class CartServiceImpl implements CartService {
             CompletableFuture<Void> getSkuInfoTask = CompletableFuture.runAsync(() -> {
                 // 1 远程调用查询商品信息
                 R info = productFeign.info(skuId);
-                SkuInfoVO data = info.getData("skuInfo", new TypeReference<SkuInfoVO>() {});
+                SkuInfoVO data = info.getData("skuInfo", new TypeReference<SkuInfoVO>() {
+                });
                 // 2 将新商品添加到购物车
                 cartItem.setChecked(true);
                 cartItem.setCount(num);
@@ -139,6 +141,25 @@ public class CartServiceImpl implements CartService {
     public void deleteItem(Long skuId) {
         BoundHashOperations<String, Object, Object> cartOps = getCartOps();
         cartOps.delete(skuId.toString());
+    }
+
+    @Override
+    public List<CartItem> getUserCartItems() {
+        UserInfoTO userInfoTO = CartInterceptor.threadLocal.get();
+        if (!ObjectUtils.isEmpty(userInfoTO)) {
+            String cartKey = CART_PREFIX + userInfoTO.getUserId();
+            List<CartItem> cartItems = getCartItems(cartKey);
+            List<CartItem> collect = cartItems.stream().filter(o -> o.getChecked())
+                    .map(o -> {
+                        R price = productFeign.getPrice(o.getSkuId());
+                        // 更新为最新价格
+                        String data = (String) price.get("data");
+                        o.setPrice(new BigDecimal(data));
+                        return o;
+                    }).collect(Collectors.toList());
+            return collect;
+        }
+        return null;
     }
 
     /**

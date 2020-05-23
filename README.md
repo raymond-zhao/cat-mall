@@ -626,7 +626,7 @@ GET/_cat/indices // 查看所有索引
 // 保存一条数据 保存在哪个索引的哪个类型下 指定用哪一个标识
 PUT customer/external/1 // PUT 和 POST 均可 PUT必须带ID，POST可带可不带
 {
-  "name": John Snow
+  "name": "John Snow"
 }
 ```
 
@@ -1352,4 +1352,42 @@ public class MyRabbitConfig {
 ```
 
 ### 可靠投递
+
+## 订单服务
+
+### 基本环境搭建
+
+`Nginx`静态资源，网关等。
+
+### 登录拦截
+
+### Feign远程调用丢失请求头
+
+`Feign`在远程调用之前要构造请求，此时会丢失请求头`headers`，`request`中包含许多拦截器。
+
+在构建新请求的时候需要吧“老请求”中的数据获取并保存传递到新请求中。
+
+```java
+@Configuration
+public class MallFeignConfig {
+    @Bean("requestInterceptor")
+    public RequestInterceptor requestInterceptor() {
+        return new RequestInterceptor() {
+            @Override
+            public void apply(RequestTemplate template) {
+                ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+                String cookie = requestAttributes.getRequest().getHeader("Cookie");
+                template.header("Cookie", cookie);
+            }
+        };
+    }
+}
+```
+
+### Feign异步编排丢失请求头问题
+
+- 原因：因为`RequestContextHolder`中的`ThreadLocal`只在当前线程可用，线程间独立，而在异步编排时会创建不同的线程执行任务，`ThreadLocal`中的数据将会丢失。
+- 解决办法：在异步编排前首先获取`RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();`，然后在异步任务开始前重新设置进去，`RequestContextHolder.setRequestAttributes(requestAttributes);`
+
+
 
