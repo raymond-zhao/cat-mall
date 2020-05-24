@@ -287,6 +287,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     }
 
     @Override
+    public SpuInfoEntity getSpuInfoBySkuId(Long skuId) {
+        SkuInfoEntity skuInfoEntity = skuInfoService.getById(skuId);
+        return getById(skuInfoEntity.getSpuId());
+    }
+
+    @Override
     public PageUtils queryPageByCondition(Map<String, Object> params) {
 
         QueryWrapper<SpuInfoEntity> wrapper = new QueryWrapper<>();

@@ -2,6 +2,8 @@ package edu.dlut.catmall.order.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import edu.dlut.catmall.order.vo.OrderConfirmVO;
+import edu.dlut.catmall.order.vo.OrderSubmitVO;
+import edu.dlut.catmall.order.vo.SubmitOrderResponseVO;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.catmall.order.entity.OrderEntity;
 
@@ -21,5 +23,6 @@ public interface OrderService extends IService<OrderEntity> {
 
     OrderConfirmVO confirmOrder() throws ExecutionException, InterruptedException;
 
+    SubmitOrderResponseVO submitOrder(OrderSubmitVO submitVO);
 }
 

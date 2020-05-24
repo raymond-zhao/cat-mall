@@ -2,6 +2,7 @@ package edu.dlut.catmall.ware.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import edu.dlut.catmall.ware.vo.SkuHasStockVO;
+import edu.dlut.catmall.ware.vo.WareSkuLockVO;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.catmall.ware.entity.WareSkuEntity;
 
@@ -23,5 +24,6 @@ public interface WareSkuService extends IService<WareSkuEntity> {
 
     List<SkuHasStockVO> getSkuHasStock(List<Long> skuIds);
 
+    Boolean orderLockStock(WareSkuLockVO vo);
 }
 

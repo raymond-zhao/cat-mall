@@ -18,6 +18,7 @@ import lombok.Getter;
  *  *  13: 购物车
  *  *  14: 物流
  *  *  15: 用户
+ *  *  22: 库存
  **/
 @Getter
 public enum BizCodeEnum {
@@ -34,7 +35,9 @@ public enum BizCodeEnum {
 
     PHONE_EXIST_EXCEPTION(15002, "手机号已存在"),
 
-    LOGIN_EXCEPTION(15003, "用户名或密码错误")
+    LOGIN_EXCEPTION(15003, "用户名或密码错误"),
+
+    NO_STOCK_EXCEPTION(22000, "商品库存不足")
     ;
 
     private int code;

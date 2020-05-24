@@ -20,7 +20,8 @@
   - 打通分布式开发中的所有技术栈
   - 实现一整套的微服务整合，包括秒杀，结算，库存...
 - 第三阶段：高可用集群-架构师提升
-  - 搭建 Kubernetes 集群，实现全流程 DevOps
+  - 搭建MySQL集群，Redis集群，RabbitMQ集群，ElasticSearch集群。
+  - 搭建 Kubernetes 集群，实现全流程 DevOps。
 
 ![谷粒商城-微服务架构图](https://tva1.sinaimg.cn/large/007S8ZIlly1geblwvpadsj31f10u07dn.jpg)
 
@@ -1361,7 +1362,7 @@ public class MyRabbitConfig {
 
 ### 登录拦截
 
-### Feign远程调用丢失请求头
+### Feign远程调用丢失请求头问题
 
 `Feign`在远程调用之前要构造请求，此时会丢失请求头`headers`，`request`中包含许多拦截器。
 
@@ -1389,5 +1390,35 @@ public class MallFeignConfig {
 - 原因：因为`RequestContextHolder`中的`ThreadLocal`只在当前线程可用，线程间独立，而在异步编排时会创建不同的线程执行任务，`ThreadLocal`中的数据将会丢失。
 - 解决办法：在异步编排前首先获取`RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();`，然后在异步任务开始前重新设置进去，`RequestContextHolder.setRequestAttributes(requestAttributes);`
 
+### 接口幂等性
 
+在确认页点击 **提交订单** 时，用户可能不小心点击多次，所以即使用户点击次数大于1次，也应该保证只提交一次。
+
+- 接口幂等性：保证用户对统一操作发起的一次请求或多次请求的结果时一致的。
+
+#### 应用情况
+
+- 用户多次点击按钮
+- 用户页面回退后再次提交
+- 微服务相互调用，由于网络问题导致请求失败，触发`feign`重试机制
+- 其他业务情况
+
+#### 幂等性解决方案
+
+- Token机制
+  - `Redis Lua`脚本
+- 各种锁机制
+  - 数据库悲观锁、乐观锁
+  - 业务层分布式锁
+- 各种唯一性约束
+  - 数据库唯一性约束
+  - `redis set`防重
+  -  防重表
+  - 全局请求唯一ID
+
+#### 下单流程
+
+```
+下单 去创建订单 验证令牌 核算价格 锁定库存
+```
 

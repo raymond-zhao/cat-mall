@@ -1,14 +1,11 @@
 package edu.dlut.catmall.ware.controller;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import edu.dlut.catmall.ware.entity.WareInfoEntity;
 import edu.dlut.catmall.ware.service.WareInfoService;
@@ -27,8 +24,14 @@ import edu.dlut.common.utils.R;
 @RestController
 @RequestMapping("ware/wareinfo")
 public class WareInfoController {
+
     @Autowired
     private WareInfoService wareInfoService;
+
+    @GetMapping("/fare")
+    public R getFare(@RequestParam("addrId") Long addrId) {
+        return R.ok().setData(wareInfoService.getFare(addrId));
+    }
 
     /**
      * 列表

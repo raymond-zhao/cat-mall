@@ -114,11 +114,7 @@
                     </div>
                     <div>
                         <h4><a href="">我的足迹</a><a href="">更多 ></a></h4>
-                        <a href=""><img src="/static/order/confirm/image/59ae02fcN529cc4a1.jpg"/></a>
-                        <a href=""><img src="/static/order/confirm/image/59ce706fN6f3f2a4a.jpg"/></a>
-                        <a href=""><img src="/static/order/confirm/image/57b191f2N15993cbb.jpg"/></a>
-                        <a href=""><img src="/static/order/confirm/image/58ff269fN7b7e087b.jpg"/></a>
-
+                        <a href=""><img src=""/></a>
                     </div>
                 </div>
 
@@ -595,8 +591,8 @@
     </div>
 
     <!--地址-->
-    <div class="top-3" th:each="addr:${orderConfirmData.addresses}">
-        <p>[[${addr.name}]]</p>
+    <div class="top-3 addr-item" th:each="addr:${orderConfirmData.addresses}">
+        <p th:attr="defaultStatus=${addr.defaultStatus}, addrId=${addr.id}">[[${addr.name}]]</p>
         <span>[[${addr.name}]] [[${addr.province}]] [[${addr.detailAddress}]] [[${addr.phone}]]</span>
     </div>
     <p class="p2">更多地址︾</p>
@@ -722,7 +718,7 @@
         </p>
         <p class="qian_y">
             <span>运费： </span>
-            <span class="rmb"> &nbsp ￥0.00</span>
+            <span class="rmb"> &nbsp ￥<b id="fareEle"></b></span>
         </p>
         <p class="qian_y">
             <span>服务费： </span>
@@ -736,10 +732,15 @@
     </div>
 
     <div class="yfze">
-        <p class="yfze_a"><span class="z">应付总额：</span><span class="hq">￥[[${#numbers.formatDecimal(orderConfirmData.payPrice, 1, 2)}]]</span></p>
-        <p class="yfze_b">寄送至： xxx 收货人：xxx</p>
+        <p class="yfze_a"><span class="z">应付总额：</span><span class="hq">￥<b id="payPrice"></b></span></p>
+        <p class="yfze_b">寄送至： <span id="receiveAddress"></span> 收货人：<span id="receiver"></span></p>
     </div>
-    <button class="tijiao">提交订单</button>
+    <form action="http://order.catmall.com/submitOrder" method="post">
+        <input id="addrIdInput" name="addrId" type="hidden" />
+        <input id="payPriceInput" name="payPrice" type="hidden" />
+        <input type="hidden " name="orderToken" th:value="${orderConfirmData.orderToken}" />
+        <button class="tijiao" type="submit">提交订单</button>
+    </form>
 </div>
 </div>
 
@@ -972,7 +973,37 @@
         }, function () {
             $('.h-r-1').css('display', 'none')
         })
+        highlightAddress();
+        getFare($(".addr-item p[defaultStatus='1']").attr("addrId"));
     })
+
+    function highlightAddress() {
+        $(".addr-item p").css({"border": "2px solid gray"});
+        $(".addr-item p[defaultStatus='1']").css({"border": "2px solid red"});
+    }
+
+    $(".addr-item p").click(function () {
+        $(".addr-item p").attr("defaultStatus", "0");
+        $(this).attr("defaultStatus", "1");
+        highlightAddress();
+        const addrId = $(this).attr("addrId");
+        // ajax 获取运费信息
+        getFare(addrId)
+    });
+
+    function getFare(addrId) {
+        // 给表单回填选择的地址
+        $("#addrIdInput").val(addrId);
+        $.get("http://catmall.com/api/ware/wareinfo/fare?addrId=" + addrId, function (response) {
+            $("#fareEle").text(response.data.fare);
+            const total = [[${orderConfirmData.total}]];
+            const payPrice = total * 1 + response.data.fare * 1;
+            $("#payPriceInput").val(payPrice);
+            $("#payPrice").text(payPrice);
+            $("#receiveAddress").text(response.data.memberAddressVO.province + " " + response.data.memberAddressVO.detailAddress);
+            $("#receiver").text(response.data.memberAddressVO.name);
+        });
+    }
 
 </script>
 </body>
