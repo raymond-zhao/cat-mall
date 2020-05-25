@@ -1419,6 +1419,60 @@ public class MallFeignConfig {
 #### 下单流程
 
 ```
-下单 去创建订单 验证令牌 核算价格 锁定库存
+下单 创建订单 验证令牌 核算价格 锁定库存
+```
+
+### 分布式事务
+
+![image-20200525153506445](https://tva1.sinaimg.cn/large/007S8ZIlly1gf4qgbev2nj31jx0u049h.jpg)
+
+- CAP定理
+  - C: 一致性，在分布式系统中的所有数据备份，在同一时刻是否有同样的值。
+  - A: 可用性，再急群众一部分结点故障后，集群整体是否还能响应客户端的读写请求。
+  - P: 分区容错性，大多数分布式系统都分布在多个子网络，每个子网络就叫做一个区，分区容错的意思是，区间通信可能失败。
+  - CAP定理指的是以上三点至多只能同时保证两点，不能三者兼顾，一般来说在分布式系统中P不可避免，所以一个系统至多只能包租CP或AP。
+- [Raft定理动画](http://thesecretlivesofdata.com/raft/)
+- BASE定理
+  - 选择AP，舍弃实现C(强一致性)，选择实现弱一致性，保证实现最终一致性。
+  - 基本可用
+  - 软状态
+  - 最终一致性
+
+### 事务传播
+
+- 本地事务失效问题
+  - 同一个对象内事务互调默认失败，原因是绕过了代理对象，而事务是通过代理对象来控制的。
+- 解决方法
+  - 使用代理对象来调用事务方法，引入`spring-boot-starter-aop`，`aop`又引入了`aspectj`
+  - `@EnableAspectJAutoProxy(expose = true)`，开启`aspectj`动态代理功能，如果不开启的话，默认使用的是`JDKProxy`，开启后以后创建对象采用`aspectj`动态代理(即使没有接口也可以创建代理对象, JDKProxy要求被代理的对象有接口定义)
+  - 本类事务互相调用此时可以实现`AopContext.currentProxy`
+
+### 解决方案
+
+- 2PC(2 phase commit, 二阶段提交)模式
+- 柔性事务-TCC事务补偿性方案
+  - 刚性事务：遵循ACID
+  - 柔性事务：遵循BASE
+- 柔性事务-最大努力通知型方案
+- 柔性事务-可靠消息+最终一致性(异步确保型)
+
+## Seata
+
+[Seata](http://seata.io/zh-cn/docs/user/quickstart.html)
+
+```mysql
+CREATE TABLE `undo_log` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `branch_id` bigint(20) NOT NULL,
+  `xid` varchar(100) NOT NULL,
+  `context` varchar(128) NOT NULL,
+  `rollback_info` longblob NOT NULL,
+  `log_status` int(11) NOT NULL,
+  `log_created` datetime NOT NULL,
+  `log_modified` datetime NOT NULL,
+  `ext` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ux_undo_log` (`xid`,`branch_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 ```
 

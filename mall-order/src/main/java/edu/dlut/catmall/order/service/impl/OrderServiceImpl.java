@@ -13,6 +13,7 @@ import edu.dlut.catmall.order.service.OrderItemService;
 import edu.dlut.catmall.order.to.OrderCreateTO;
 import edu.dlut.catmall.order.vo.*;
 import edu.dlut.common.constant.OrderConstant;
+import edu.dlut.common.exception.NoStockException;
 import edu.dlut.common.to.SkuHasStockVO;
 import edu.dlut.common.utils.R;
 import edu.dlut.common.vo.MemberResponseVO;
@@ -133,6 +134,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         confirmVOThreadLocal.set(submitVO);
         SubmitOrderResponseVO responseVO = new SubmitOrderResponseVO();
         MemberResponseVO memberResponseVO = LoginUserInterceptor.loginUser.get();
+        responseVO.setCode(0);
         String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
         String orderToken = submitVO.getOrderToken();
         // 原子性操作验证和删除令牌
@@ -166,15 +168,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 R r = wareFeign.lockOrder(lockVO);
                 if (r.getCode() == 0) {
                     // 锁定成功
+                    responseVO.setOrderEntity(orderCreateTO.getOrderEntity());
+                    return responseVO;
                 } else {
                     // 锁定失败
+                    throw new NoStockException((String) r.get("msg"));
                 }
             } else {
                 responseVO.setCode(2);
                 return  responseVO;
             }
         }
-        return responseVO;
     }
 
     private void saveOrder(OrderCreateTO orderCreateTO) {
@@ -189,13 +193,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         OrderCreateTO orderCreateTO = new OrderCreateTO();
         String orderSn = IdWorker.getTimeId();
         OrderEntity orderEntity = buildOrder(orderSn);
-
+        orderCreateTO.setOrderEntity(orderEntity);
         // 获取所有的订单项
         List<OrderItemEntity> orderItemEntities = buildOrderItems(orderSn);
-
+        orderCreateTO.setOrderItems(orderItemEntities);
         // 计算所有的价格 积分
         computePrice(orderEntity, orderItemEntities);
-
         return orderCreateTO;
     }
 

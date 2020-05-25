@@ -131,14 +131,12 @@
                     <div>
                         <h4>客户</h4>
                         <ol>
-
                             <dd><a href="">帮助中心</a></dd>
                             <dd><a href="">在线客服</a></dd>
                             <dd><a href="">电话客服</a></dd>
                             <dd><a href="">金融咨询</a></dd>
                         </ol>
                         <ol>
-
                             <dd><a href="">售后服务</a></dd>
                             <dd><a href="">意见建议</a></dd>
                             <dd><a href="">客服邮箱</a></dd>
@@ -582,7 +580,7 @@
 <!--</div>-->
 <!--</div>-->
 <!--主体部分-->
-<p class="p1">填写并核对订单信息</p>
+<p class="p1">填写并核对订单信息<span style="color: red;" th:if="${msg != null}" th:text="${msg}"></span></p>
 <div class="section">
     <!--收货人信息-->
     <div class="top-2">
