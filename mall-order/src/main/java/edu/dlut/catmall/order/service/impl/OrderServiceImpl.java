@@ -17,6 +17,7 @@ import edu.dlut.common.exception.NoStockException;
 import edu.dlut.common.to.SkuHasStockVO;
 import edu.dlut.common.utils.R;
 import edu.dlut.common.vo.MemberResponseVO;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -128,6 +129,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         return orderConfirmVO;
     }
 
+    @GlobalTransactional
     @Transactional
     @Override
     public SubmitOrderResponseVO submitOrder(OrderSubmitVO submitVO) {

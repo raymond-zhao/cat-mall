@@ -10,6 +10,8 @@
         <result property="skuName" column="sku_name"/>
         <result property="skuNum" column="sku_num"/>
         <result property="taskId" column="task_id"/>
+        <result property="wareId" column="ware_id"/>
+        <result property="lockStatus" column="lock_status"/>
     </resultMap>
 
 

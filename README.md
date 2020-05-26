@@ -1444,7 +1444,7 @@ public class MallFeignConfig {
   - 同一个对象内事务互调默认失败，原因是绕过了代理对象，而事务是通过代理对象来控制的。
 - 解决方法
   - 使用代理对象来调用事务方法，引入`spring-boot-starter-aop`，`aop`又引入了`aspectj`
-  - `@EnableAspectJAutoProxy(expose = true)`，开启`aspectj`动态代理功能，如果不开启的话，默认使用的是`JDKProxy`，开启后以后创建对象采用`aspectj`动态代理(即使没有接口也可以创建代理对象, JDKProxy要求被代理的对象有接口定义)
+  - `@EnableAspectJAutoProxy(exposeProxy = true)`，开启`aspectj`动态代理功能，如果不开启的话，默认使用的是`JDKProxy`，开启后以后创建对象采用`aspectj`动态代理(即使没有接口也可以创建代理对象, JDKProxy要求被代理的对象有接口定义)
   - 本类事务互相调用此时可以实现`AopContext.currentProxy`
 
 ### 解决方案
@@ -1476,3 +1476,6 @@ CREATE TABLE `undo_log` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 ```
 
+## 延时队列
+
+### Dead Letter Exchanges(DLX) - 死信路由

@@ -1,12 +1,18 @@
 package edu.dlut.catmall.ware.service.impl;
 
+import edu.dlut.catmall.ware.entity.WareOrderTaskDetailEntity;
+import edu.dlut.catmall.ware.entity.WareOrderTaskEntity;
 import edu.dlut.catmall.ware.exception.NoStockException;
 import edu.dlut.catmall.ware.feign.ProductFeignService;
+import edu.dlut.catmall.ware.service.WareOrderTaskDetailService;
+import edu.dlut.catmall.ware.service.WareOrderTaskService;
 import edu.dlut.catmall.ware.vo.OrderItemVO;
 import edu.dlut.catmall.ware.vo.SkuHasStockVO;
 import edu.dlut.catmall.ware.vo.WareSkuLockVO;
+import edu.dlut.common.to.mq.StockLockedTO;
 import edu.dlut.common.utils.R;
 import lombok.Data;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,6 +43,15 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
 
     @Resource
     private ProductFeignService productFeignService;
+
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+    @Resource
+    private WareOrderTaskService wareOrderTaskService;
+
+    @Resource
+    private WareOrderTaskDetailService wareOrderTaskDetailService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -112,6 +127,8 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
     public Boolean orderLockStock(WareSkuLockVO vo) {
         // 按照下单的收货地址 找到一个就近的仓库 锁定库存
 
+        WareOrderTaskEntity taskEntity = new WareOrderTaskEntity();
+        taskEntity.setOrderSn(vo.getOrderSn());
         // 找到每个商品在哪些仓库还有库存
         List<OrderItemVO> locks = vo.getLocks();
 
@@ -136,6 +153,13 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                 Long count = wareSkuDao.lockSkuStock(skuId, wareId, hasStock.getNum());
                 if (count == 1) {
                     skuStocked = true;
+                    // 告诉 MQ 库存锁定成功
+                    WareOrderTaskDetailEntity wareOrderTaskDetailEntity = new WareOrderTaskDetailEntity(null, skuId, "", hasStock.getNum(), taskEntity.getId(), wareId, 1);
+                    wareOrderTaskDetailService.save(wareOrderTaskDetailEntity);
+                    StockLockedTO stockLockedTO = new StockLockedTO();
+                    stockLockedTO.setId(taskEntity.getId());
+                    stockLockedTO.setDetailId(wareOrderTaskDetailEntity.getId());
+                    rabbitTemplate.convertAndSend("stock-event-exchange", "stock.locked", stockLockedTO);
                     break;
                 } else {
                     // 当前仓库锁定库存失败 重试下一个仓库
