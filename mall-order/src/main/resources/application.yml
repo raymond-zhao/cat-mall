@@ -8,8 +8,7 @@ spring:
     username: root
     password: root
   rabbitmq:
-    host: 121.199.11.223
-    port: 5672
+    host: localhost
     virtual-host: /
     publisher-confirm-type: correlated
     # publisher-confirms: true
@@ -25,7 +24,7 @@ spring:
     name: mall-order
   cloud:
     nacos:
-      server-addr: localhost
+      server-addr: localhost:8848
   session:
     store-type: redis
   redis:

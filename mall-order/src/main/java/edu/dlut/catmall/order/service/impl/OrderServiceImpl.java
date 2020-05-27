@@ -1,7 +1,12 @@
 package edu.dlut.catmall.order.service.impl;
 
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import edu.dlut.catmall.order.dao.OrderDao;
+import edu.dlut.catmall.order.entity.OrderEntity;
 import edu.dlut.catmall.order.entity.OrderItemEntity;
 import edu.dlut.catmall.order.enume.OrderStatusEnum;
 import edu.dlut.catmall.order.feign.CartFeign;
@@ -10,19 +15,29 @@ import edu.dlut.catmall.order.feign.ProductFeign;
 import edu.dlut.catmall.order.feign.WareFeign;
 import edu.dlut.catmall.order.interceptor.LoginUserInterceptor;
 import edu.dlut.catmall.order.service.OrderItemService;
+import edu.dlut.catmall.order.service.OrderService;
 import edu.dlut.catmall.order.to.OrderCreateTO;
 import edu.dlut.catmall.order.vo.*;
 import edu.dlut.common.constant.OrderConstant;
 import edu.dlut.common.exception.NoStockException;
 import edu.dlut.common.to.SkuHasStockVO;
+import edu.dlut.common.to.mq.OrderTO;
+import edu.dlut.common.utils.PageUtils;
+import edu.dlut.common.utils.Query;
 import edu.dlut.common.utils.R;
 import edu.dlut.common.vo.MemberResponseVO;
-import io.seata.spring.annotation.GlobalTransactional;
-import org.aspectj.weaver.ast.Or;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -31,28 +46,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import edu.dlut.common.utils.PageUtils;
-import edu.dlut.common.utils.Query;
-
-import edu.dlut.catmall.order.dao.OrderDao;
-import edu.dlut.catmall.order.entity.OrderEntity;
-import edu.dlut.catmall.order.service.OrderService;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-
-import javax.annotation.Resource;
-
 
 @Service("orderService")
 public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> implements OrderService {
 
-    private ThreadLocal<OrderSubmitVO> confirmVOThreadLocal = new ThreadLocal<>();
+    private final ThreadLocal<OrderSubmitVO> confirmVOThreadLocal = new ThreadLocal<>();
 
     @Resource
     private MemberFeign memberFeign;
@@ -74,6 +72,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Resource
     private OrderItemService orderItemService;
+
+    @Resource
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -129,7 +130,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         return orderConfirmVO;
     }
 
-    @GlobalTransactional
     @Transactional
     @Override
     public SubmitOrderResponseVO submitOrder(OrderSubmitVO submitVO) {
@@ -171,6 +171,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 if (r.getCode() == 0) {
                     // 锁定成功
                     responseVO.setOrderEntity(orderCreateTO.getOrderEntity());
+                    rabbitTemplate.convertAndSend("order-event-exchange", "order.create.order", orderCreateTO.getOrderEntity());
                     return responseVO;
                 } else {
                     // 锁定失败
@@ -180,6 +181,27 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 responseVO.setCode(2);
                 return  responseVO;
             }
+        }
+    }
+
+    @Override
+    public OrderEntity getOrderByOrderSn(String orderSn) {
+        return this.getOne(new QueryWrapper<OrderEntity>().eq("order_sn", orderSn));
+    }
+
+    @Transactional
+    @Override
+    public void closeOrder(OrderEntity entity) {
+        OrderEntity orderEntity = this.getById(entity.getId());
+        if (orderEntity.getStatus().equals(OrderStatusEnum.CREATE_NEW.getCode())) {
+            // 关闭订单
+            OrderEntity update = new OrderEntity();
+            update.setId(entity.getId());
+            update.setStatus(OrderStatusEnum.CANCLED.getCode());
+            this.updateById(update);
+            OrderTO orderTO = new OrderTO();
+            BeanUtils.copyProperties(orderEntity, orderTO);
+            rabbitTemplate.convertAndSend("order-event-exchange", "order.release.other", orderTO);
         }
     }
 

@@ -3,6 +3,7 @@ package edu.dlut.catmall.order.interceptor;
 import edu.dlut.common.constant.AuthServerConstant;
 import edu.dlut.common.vo.MemberResponseVO;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -21,6 +22,12 @@ public class LoginUserInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+
+        String requestURI = request.getRequestURI();
+        boolean match = new AntPathMatcher().match("/order/order/status/**", requestURI);
+        if (match)
+            return true;
+
         MemberResponseVO attribute = (MemberResponseVO) request.getSession().getAttribute(AuthServerConstant.LOGIN_USER);
         if (!ObjectUtils.isEmpty(attribute)) {
             loginUser.set(attribute);

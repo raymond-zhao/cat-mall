@@ -18,6 +18,9 @@ spring:
   rabbitmq:
     host: localhost
     virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: manual
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml

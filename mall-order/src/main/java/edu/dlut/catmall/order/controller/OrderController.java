@@ -3,18 +3,14 @@ package edu.dlut.catmall.order.controller;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import edu.dlut.catmall.order.entity.OrderEntity;
 import edu.dlut.catmall.order.service.OrderService;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.common.utils.R;
 
+import javax.annotation.Resource;
 
 
 /**
@@ -27,8 +23,15 @@ import edu.dlut.common.utils.R;
 @RestController
 @RequestMapping("order/order")
 public class OrderController {
-    @Autowired
+
+    @Resource
     private OrderService orderService;
+
+    @GetMapping("/status/{orderSn}")
+    public R getOrderStatus(@PathVariable("orderSn") String orderSn) {
+        OrderEntity orderEntity = orderService.getOrderByOrderSn(orderSn);
+        return R.ok().setData(orderEntity);
+    }
 
     /**
      * 列表

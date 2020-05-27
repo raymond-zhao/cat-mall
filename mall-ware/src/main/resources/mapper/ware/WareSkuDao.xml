@@ -26,6 +26,9 @@
           and ware_id = #{wareId}
           and stock - stock_locked >= #{num}
     </update>
+    <update id="unlockStock">
+        update catmall_wms.wms_ware_sku set stock_locked = stock_locked - #{num} where sku_id = #{skuId} and ware_id = #{wareId}
+    </update>
     <select id="getSkuStock" resultType="java.lang.Long">
         select sum(stock - stock_locked)
         from catmall_wms.wms_ware_sku

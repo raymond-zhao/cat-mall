@@ -42,7 +42,7 @@ public class WareRabbitConfig {
         arguments.put("x-dead-letter-exchange", "stock-event-exchange");
         arguments.put("x-dead-letter-routing-key", "order.release");
         arguments.put("x-message-ttl", 120000);
-        return new Queue("order.delay.queue", true, false, false, arguments);
+        return new Queue("stock.delay.queue", true, false, false, arguments);
     }
 
     @Bean

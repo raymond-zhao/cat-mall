@@ -14,6 +14,6 @@ public class StockLockedTO {
 
     private Long id;
 
-    private Long detailId;
+    private StockDetailTO detail;
 
 }

@@ -1458,7 +1458,9 @@ public class MallFeignConfig {
 
 ## Seata
 
-[Seata](http://seata.io/zh-cn/docs/user/quickstart.html)
+> 持续启动失败，选择放弃。
+>
+> `no available service 'null' found, please make sure registry config correct`
 
 ```mysql
 CREATE TABLE `undo_log` (
@@ -1479,3 +1481,43 @@ CREATE TABLE `undo_log` (
 ## 延时队列
 
 ### Dead Letter Exchanges(DLX) - 死信路由
+
+### 消息积压、重复、丢失等问题解决方案
+
+- 消息丢失
+  - 消息发送出去，由于网络问题没有抵达服务器
+    - 做好容错方法(`try-catch`)，发送消息可能会网络失败，失败后要有重试机制，可记录到系统数据库，采用定期扫描重发的方式。
+    - 做好日志记录，每个消息状态是否都被服务器收到都应该被记录
+    - 做好定期重发，如果消息没有发送成功，定期去数据库扫描未成功的消息进行重发
+  - 消息抵达`Broker`，`Broker`要将消息写入磁盘才算成功，此时`Broker`尚未持久化完成，宕机。
+    - `publisher`必须加入确认回调机制，确认成功的消息，修改数据库消息状态
+  - 自从`ACK`状态下，消费者收到消息，但没来得及消费便宕机
+    - 一定开启手动`ACK`，消息成功才移除，失败或者没来得及处理就`noACK`并重新入队。
+- 消息重复
+  - 消息消费成功，事务已经提交，`ack`时，机器宕机，导致没有`ack`成功，`Broker`的消息重新由`unack-> ready`，并发送给其他消费者。
+  - 消息消费失败，由于重试机制，自动又将消息发送出去。
+  - 成功消费，`ack`时宕机，消息由`unack`变为`ready`，`Broker`又重新发送
+    - 消费者的业务消费接口应该设计成幂等性的，比如扣库存工作单的状态标志
+    - 使用 **防重表(redis, mysql)** ，发送消息每一个都有业务的唯一标识，处理过就不用再处理。
+    - `RabbitMQ`的每一个消息都有`redelivered`字段，可以获取消息是否是被重新投递的。
+- 消息积压
+  - 消费者宕机积压
+  - 消费者消费能力不足积压
+  - 发送者发送流量太大
+    - 上线更多的消费者，进行正常消费。
+    - 上线专门的队列消费服务，将消息先批量取出来，记录数据库，离线慢慢处理。
+
+```mysql
+create table `mq_message` (
+    `message_id` char(32) not null,
+    `content` text,
+    `to_exchange` varchar(255) default null,
+    `routing_key` varchar(255) default null,
+    `class_type` varchar(255) default null,
+    `message_status` int(1) default '0' comment '0-新建 1-已发送 2-错误抵达 3-已抵达',
+    `create_time` datetime default null,
+    `update_time` datetime default null,
+    primary key (`message_id`)
+) engine InnoDB default charset=utf8mb4
+```
+

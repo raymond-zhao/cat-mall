@@ -16,7 +16,7 @@ import java.util.Map;
  * DESCRIPTION:
  **/
 @Configuration
-public class MyMQConfig {
+public class OrderMQConfig {
 
     @Bean
     public Queue orderDelayQueue() {
@@ -50,6 +50,12 @@ public class MyMQConfig {
     public Binding orderReleaseOrderBinding() {
         return new Binding("order.release.order.queue", Binding.DestinationType.QUEUE,
                 "order-event-exchange", "order.release.order", new HashMap<>());
+    }
+
+    @Bean
+    public Binding orderReleaseOtherBinding() {
+        return new Binding("stock.release.stock.queue", Binding.DestinationType.QUEUE,
+                "order-event-exchange", "order.release.other.#", new HashMap<>());
     }
 
 }
