@@ -1,4 +1,4 @@
-package edu.dlut.catmall.order.interceptor;
+package edu.dlut.catmall.member.interceptor;
 
 import edu.dlut.common.constant.AuthServerConstant;
 import edu.dlut.common.vo.MemberResponseVO;
@@ -24,10 +24,8 @@ public class LoginUserInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
         String requestURI = request.getRequestURI();
-        AntPathMatcher matcher = new AntPathMatcher();
-        boolean status = matcher.match("/order/order/status/**", requestURI);
-        boolean payed = matcher.match("/payed/**", requestURI);
-        if (status || payed)
+        boolean match = new AntPathMatcher().match("/member/**", requestURI);
+        if (match)
             return true;
 
         MemberResponseVO attribute = (MemberResponseVO) request.getSession().getAttribute(AuthServerConstant.LOGIN_USER);

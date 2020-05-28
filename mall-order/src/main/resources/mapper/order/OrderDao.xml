@@ -48,6 +48,9 @@
         <result property="commentTime" column="comment_time"/>
         <result property="modifyTime" column="modify_time"/>
     </resultMap>
+    <update id="updateOrderStatus">
+        update  catmall_oms.oms_order set status = #{code} where order_sn = #{outTradeNo}
+    </update>
 
 
 </mapper>

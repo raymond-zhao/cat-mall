@@ -13,6 +13,12 @@ spring:
         server-addr: localhost:8848
   application:
     name: mall-member
+  thymeleaf:
+    cache: false
+  session:
+    store-type: redis
+  redis:
+    host: localhost
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml

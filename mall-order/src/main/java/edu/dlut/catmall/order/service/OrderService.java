@@ -1,9 +1,7 @@
 package edu.dlut.catmall.order.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import edu.dlut.catmall.order.vo.OrderConfirmVO;
-import edu.dlut.catmall.order.vo.OrderSubmitVO;
-import edu.dlut.catmall.order.vo.SubmitOrderResponseVO;
+import edu.dlut.catmall.order.vo.*;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.catmall.order.entity.OrderEntity;
 
@@ -28,6 +26,12 @@ public interface OrderService extends IService<OrderEntity> {
     OrderEntity getOrderByOrderSn(String orderSn);
 
     void closeOrder(OrderEntity entity);
+
+    PayVo getOrderPay(String orderSn);
+
+    PageUtils queryPageWithItems(Map<String, Object> params);
+
+    String handlePayResult(PayAsyncVo vo);
 
 }
 

@@ -1521,3 +1521,23 @@ create table `mq_message` (
 ) engine InnoDB default charset=utf8mb4
 ```
 
+## 支付宝支付
+
+[支付宝开放平台](https://open.alipay.com/platform/home.htm)
+
+### 加密与解密
+
+- 对称加密
+- 非对称加密
+- 公钥、私钥、签名、验签
+
+### 沙箱环境
+
+[文档-沙箱环境](https://opendocs.alipay.com/open/200/105311)
+
+[RSA生成器](https://opendocs.alipay.com/open/291/106097/)
+
+### 内网穿透
+
+### 支付宝异步通知
+

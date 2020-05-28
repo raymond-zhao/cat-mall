@@ -100,7 +100,9 @@
             <img src="/static/order/pay/img/weixin.png" alt="">微信支付
           </li>
 		  <li>
-            <img src="/static/order/pay/img/zhifubao.png" style="weight:auto;height:30px;" alt="">支付宝
+            <a th:href="'http://order.catmall.com/payOrder?orderSn=' + ${submitOrderResponse.orderEntity.orderSn}">
+              <img src="/static/order/pay/img/zhifubao.png" style="weight:auto;height:30px;" alt="">
+            </a>
           </li>
         </ul>
       </div>

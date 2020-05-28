@@ -21,6 +21,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.alipay.sdk</groupId>
+            <artifactId>alipay-sdk-java</artifactId>
+            <version>4.10.0.ALL</version>
+        </dependency>
+        <dependency>
             <groupId>edu.dlut.catmall</groupId>
             <artifactId>mall-commons</artifactId>
             <version>0.0.1-SNAPSHOT</version>
@@ -49,12 +54,12 @@
             <artifactId>jedis</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -61,3 +61,8 @@ spring:
           uri: lb://mall-order
           predicates:
             - Host=order.catmall.com
+
+        - id: mall_member_route
+          uri: lb://mall-member
+          predicates:
+            - Host=member.catmall.com

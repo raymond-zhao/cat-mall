@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.dlut.catmall.order.dao.OrderDao;
 import edu.dlut.catmall.order.entity.OrderEntity;
 import edu.dlut.catmall.order.entity.OrderItemEntity;
+import edu.dlut.catmall.order.entity.PaymentInfoEntity;
 import edu.dlut.catmall.order.enume.OrderStatusEnum;
 import edu.dlut.catmall.order.feign.CartFeign;
 import edu.dlut.catmall.order.feign.MemberFeign;
@@ -16,6 +17,7 @@ import edu.dlut.catmall.order.feign.WareFeign;
 import edu.dlut.catmall.order.interceptor.LoginUserInterceptor;
 import edu.dlut.catmall.order.service.OrderItemService;
 import edu.dlut.catmall.order.service.OrderService;
+import edu.dlut.catmall.order.service.PaymentInfoService;
 import edu.dlut.catmall.order.to.OrderCreateTO;
 import edu.dlut.catmall.order.vo.*;
 import edu.dlut.common.constant.OrderConstant;
@@ -75,6 +77,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Resource
     private RabbitTemplate rabbitTemplate;
+
+    @Resource
+    private PaymentInfoService paymentInfoService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -203,6 +208,54 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             BeanUtils.copyProperties(orderEntity, orderTO);
             rabbitTemplate.convertAndSend("order-event-exchange", "order.release.other", orderTO);
         }
+    }
+
+    @Override
+    public PayVo getOrderPay(String orderSn) {
+        PayVo payVo = new PayVo();
+        OrderEntity order = this.getOrderByOrderSn(orderSn);
+
+        BigDecimal totalAmount = order.getPayAmount().setScale(2, BigDecimal.ROUND_UP);
+        payVo.setTotal_amount(totalAmount.toString());
+        payVo.setOut_trade_no(order.getOrderSn());
+        List<OrderItemEntity> order_sn = orderItemService.list(new QueryWrapper<OrderItemEntity>().eq("order_sn", orderSn));
+        OrderItemEntity orderItem = order_sn.get(0);
+        payVo.setSubject(orderItem.getSkuName());
+        payVo.setBody(orderItem.getSkuAttrsVals());
+        return payVo;
+    }
+
+    @Override
+    public PageUtils queryPageWithItems(Map<String, Object> params) {
+        MemberResponseVO memberResponseVO = LoginUserInterceptor.loginUser.get();
+        IPage<OrderEntity> page = this.page(new Query<OrderEntity>().getPage(params),
+                new QueryWrapper<OrderEntity>().eq("member_id", memberResponseVO.getId()).orderByDesc("id"));
+        List<OrderEntity> order_sn = page.getRecords().stream().map(order -> {
+            List<OrderItemEntity> itemEntities = orderItemService.list(new QueryWrapper<OrderItemEntity>().eq("order_sn", order.getOrderSn()));
+            order.setItemEntities(itemEntities);
+            return order;
+        }).collect(Collectors.toList());
+        page.setRecords(order_sn);
+        return new PageUtils(page);
+    }
+
+    @Override
+    public String handlePayResult(PayAsyncVo vo) {
+        PaymentInfoEntity infoEntity = new PaymentInfoEntity();
+        infoEntity.setAlipayTradeNo(vo.getTrade_no());
+        infoEntity.setOrderSn(vo.getOut_trade_no());
+        infoEntity.setPaymentStatus(vo.getTrade_status());
+        infoEntity.setCallbackTime(vo.getNotify_time());
+
+        paymentInfoService.save(infoEntity);
+
+        // 修改订单的状态信息
+        if (vo.getTrade_status().equals("TRADE_SUCCESS") || vo.getTrade_status().equals("TRADE_FINISHED")) {
+            String outTradeNo = vo.getOut_trade_no();
+            this.baseMapper.updateOrderStatus(outTradeNo, OrderStatusEnum.PAYED.getCode());
+        }
+
+        return "success";
     }
 
     private void saveOrder(OrderCreateTO orderCreateTO) {
