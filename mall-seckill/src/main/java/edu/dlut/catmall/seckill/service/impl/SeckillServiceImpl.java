@@ -133,6 +133,14 @@ public class SeckillServiceImpl implements SeckillService {
         return null;
     }
 
+    /**
+     * TODO 上架秒杀商品时 每一个数据都应该设置过期时间
+     * 秒杀后续的流程 简化了收获地址等信息
+     * @param killId
+     * @param key
+     * @param num
+     * @return
+     */
     @Override
     public String kill(String killId, String key, Integer num) {
         MemberResponseVO member = LoginUserInterceptor.loginUser.get();

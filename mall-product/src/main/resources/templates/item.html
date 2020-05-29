@@ -641,16 +641,18 @@
 
                         </div>
                     </div>
-                    <div class="box-btns-two">
-                        <a id="seckillA" th:attr="skuId=${item.info.skuId}, sessionId=${item.seckillInfo.promotionSessionId}, code=${item.seckillInfo.randomCode}"
-                           th:if="${#dates.createNow().getTime() >= item.seckillInfo.startTime && #dates.createNow().getTime() <= item.seckillInfo.endTime}">
+                    <div class="box-btns-two" th:if="${item.seckillInfo != null && (#dates.createNow().getTime() >= item.seckillInfo.startTime && #dates.createNow().getTime() <= item.seckillInfo.endTime)}">
+                        <a id="seckillA" th:attr="skuId=${item.info.skuId}, sessionId=${item.seckillInfo.promotionSessionId}, code=${item.seckillInfo.randomCode}">
                             立即抢购
                         </a>
-                        <a id="addToCartA" th:attr="skuId=${item.info.skuId}, sessionId=${item.seckillInfo.promotionSessionId}, code=${item.seckillInfo.randomCode}"
-                           th:if="${#dates.createNow().getTime() < item.seckillInfo.startTime || #dates.createNow().getTime() > item.seckillInfo.endTime}">
+                    </div>
+
+                    <div class="box-btns-two" th:if="${item.seckillInfo == null && (#dates.createNow().getTime() >= item.seckillInfo.startTime && #dates.createNow().getTime() <= item.seckillInfo.endTime)}">
+                        <a id="addToCartA" th:attr="skuId=${item.info.skuId}">
                             加入购物车
                         </a>
                     </div>
+
                     <div class="box-btns-three">
                         <img src="/static/item/img/e4ed3606843f664591ff1f68f7fda12d.png" alt=""/> 分享
                     </div>
