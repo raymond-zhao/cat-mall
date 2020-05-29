@@ -2,6 +2,7 @@ package edu.dlut.catmall.order.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import edu.dlut.catmall.order.vo.*;
+import edu.dlut.common.to.mq.SeckillOrderTO;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.catmall.order.entity.OrderEntity;
 
@@ -33,5 +34,6 @@ public interface OrderService extends IService<OrderEntity> {
 
     String handlePayResult(PayAsyncVo vo);
 
+    void createSeckillOrder(SeckillOrderTO seckillOrder);
 }
 

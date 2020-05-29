@@ -26,6 +26,7 @@ import edu.dlut.common.utils.R;
  */
 @RestController
 @RequestMapping("coupon/seckillskurelation")
+
 public class SeckillSkuRelationController {
     @Autowired
     private SeckillSkuRelationService seckillSkuRelationService;

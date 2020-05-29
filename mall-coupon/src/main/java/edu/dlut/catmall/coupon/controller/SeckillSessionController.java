@@ -1,14 +1,11 @@
 package edu.dlut.catmall.coupon.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import edu.dlut.catmall.coupon.entity.SeckillSessionEntity;
 import edu.dlut.catmall.coupon.service.SeckillSessionService;
@@ -27,8 +24,15 @@ import edu.dlut.common.utils.R;
 @RestController
 @RequestMapping("coupon/seckillsession")
 public class SeckillSessionController {
+
     @Autowired
     private SeckillSessionService seckillSessionService;
+
+    @GetMapping("/latest3DaySession")
+    public R getLatest3DaySession() {
+        List<SeckillSessionEntity> sessions = seckillSessionService.getLatest3DaySession();
+        return R.ok().setData(sessions);
+    }
 
     /**
      * 列表

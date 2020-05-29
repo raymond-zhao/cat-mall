@@ -59,11 +59,13 @@
             </ul>
             <ul class="header_ul_right">
                 <li style="border: 0;">
-                    <a th:if="${session.loginUser == null}" href="http://auth.catmall.com/login.html" class="aa">你好，请登录</a>
+                    <a th:if="${session.loginUser == null}" href="http://auth.catmall.com/login.html"
+                       class="aa">你好，请登录</a>
                     <a th:if="${session.loginUser != null}">欢迎, [[${session.loginUser.nickname}]]</a>
                 </li>
                 <li>
-                    <a th:if="${session.loginUser == null}" href="http://auth.catmall.com/register.html" style="color: red;">免费注册</a>
+                    <a th:if="${session.loginUser == null}" href="http://auth.catmall.com/register.html"
+                       style="color: red;">免费注册</a>
                 </li>
                 <li><a href="javascript:;" class="aa">我的订单</a> |</li>
                 <li class="jingdong"><a href="javascript:;">我的京东</a><span class="glyphicon glyphicon-menu-down">|</span>
@@ -513,10 +515,15 @@
                         <li>京东价</li>
                         <li>
                             <span>￥</span>
-                            <span th:text="${#numbers.formatDecimal(item.info.price,3,2)}">4499.00</span>
+                            <span th:text="${#numbers.formatDecimal(item.info.price, 3, 2)}">4499.00</span>
                         </li>
-                        <li>
-                            预约享资格
+                        <li style="color: red;" th:if="${item.seckillInfo != null}">
+                            <span th:if="${#dates.createNow().getTime() < item.seckillInfo.startTime}">
+                                商品将会在[[${#dates.format(new java.util.Date(item.seckillInfo.startTime), "yyyy-MM-dd HH:mm:ss")}]]进行秒杀活动
+                            </span>
+                            <span th:if="${#dates.createNow().getTime() >= item.seckillInfo.startTime && #dates.createNow().getTime() <= item.seckillInfo.endTime}">
+                                秒杀价 [[${#numbers.formatDecimal(item.seckillInfo.seckillPrice, 1, 2)}]]
+                            </span>
                         </li>
                         <li>
                             <a href="">
@@ -611,7 +618,6 @@
                             <dd th:each="vals:${attr.attrValues}">
                                 <a th:attr="skus=${vals.skuIds}, class=${#lists.contains(#strings.listSplit(vals.skuIds, ','), item.info.skuId.toString()) ? 'sku_attr_value checked' : 'sku_attr_value'}">
                                     [[${vals.attrValue}]]
-                                    <!--                                    <img src="/static/item/img/59ddfcb1Nc3edb8f1.jpg"/>-->
                                 </a>
                             </dd>
                         </dl>
@@ -636,7 +642,12 @@
                         </div>
                     </div>
                     <div class="box-btns-two">
-                        <a id="addToCartA" th:attr="skuId=${item.info.skuId}">
+                        <a id="seckillA" th:attr="skuId=${item.info.skuId}, sessionId=${item.seckillInfo.promotionSessionId}, code=${item.seckillInfo.randomCode}"
+                           th:if="${#dates.createNow().getTime() >= item.seckillInfo.startTime && #dates.createNow().getTime() <= item.seckillInfo.endTime}">
+                            立即抢购
+                        </a>
+                        <a id="addToCartA" th:attr="skuId=${item.info.skuId}, sessionId=${item.seckillInfo.promotionSessionId}, code=${item.seckillInfo.randomCode}"
+                           th:if="${#dates.createNow().getTime() < item.seckillInfo.startTime || #dates.createNow().getTime() > item.seckillInfo.endTime}">
                             加入购物车
                         </a>
                     </div>
@@ -843,41 +854,6 @@
                             <p>
                                 <a href="#">品牌:华为（HUAWEI）</a>
                             </p>
-                            <!--                            <table>-->
-                            <!--                                <tr>-->
-                            <!--                                    <td>-->
-                            <!--                                        <a href="#">商品名称：华为Mate 10</a>-->
-                            <!--                                    </td>-->
-                            <!--                                    <td>-->
-                            <!--                                        <a href="#">商品毛重：0.58kg</a>-->
-                            <!--                                    </td>-->
-                            <!--                                    <td>-->
-                            <!--                                        <a href="#">商品编号：5544038</a>-->
-                            <!--                                    </td>-->
-                            <!--                                    <td>-->
-                            <!--                                        <a href="#">商品产地：中国大陆</a>-->
-                            <!--                                    </td>-->
-                            <!--                                </tr>-->
-                            <!--                                <tr>-->
-                            <!--                                    <td>-->
-                            <!--                                        <a href="#">系统：安卓（Android）</a>-->
-                            <!--                                    </td>-->
-                            <!--                                    <td>-->
-                            <!--                                        <a href="#">前置摄像头像素：800万-1599万</a>-->
-                            <!--                                    </td>-->
-                            <!--                                    <td>-->
-                            <!--                                        <a href="#">后置摄像头像素：2000万及以上，1200万-1999万</a>-->
-                            <!--                                    </td>-->
-                            <!--                                    <td>-->
-                            <!--                                        <a href="#">机身内存：128GB</a>-->
-                            <!--                                    </td>-->
-                            <!--                                </tr>-->
-                            <!--                                <tr>-->
-                            <!--                                    <td colspan="4">-->
-                            <!--                                        <a href="#">全面屏，双卡双待，指纹识别，Type-C，VoLTE，2K屏，拍照神器，支持NFC，商务手机，安全手机，分辨率10</a>-->
-                            <!--                                    </td>-->
-                            <!--                                </tr>-->
-                            <!--                            </table>-->
                             <img class="xiaoguo" th:src="${descp}"
                                  th:each="descp:${#strings.listSplit(item.desp.decript, ',')}"/>
                             <div class="guiGebox guiGebox1">
@@ -1302,7 +1278,7 @@
         for (var i = 1; i < skus.length; i++) {
             filterEle = $(filterEle).filter(skus[i]);
         }
-        location.href="http://item.catmall.com/" + filterEle[0] + ".html";
+        location.href = "http://item.catmall.com/" + filterEle[0] + ".html";
     });
 
     $(function () {
@@ -1316,6 +1292,20 @@
         location.href = "http://cart.catmall.com/addToCart?skuId=" + skuId + "&num=" + num;
         return false;
     });
+
+    $("#seckillA").click(function () {
+        const isLogin = [[${session.loginUser != null}]]; // 已登录
+        if (isLogin) {
+            const killId = $(this).attr("sessionId") + "_" + $(this).attr("skuId");
+            const key = $(this).attr("code");
+            const num = $("#numInput").val();
+            location.href = "http://seckill.catmall.com/kill?killId=" + killId + "&key=" + key + "&num=" + num;
+        } else {
+            alert("想要进行秒杀的话请先进行登录");
+        }
+
+        return false;
+    })
 </script>
 
 </html>

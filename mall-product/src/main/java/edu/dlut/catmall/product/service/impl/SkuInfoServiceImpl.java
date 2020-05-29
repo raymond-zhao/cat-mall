@@ -1,16 +1,23 @@
 package edu.dlut.catmall.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
 import edu.dlut.catmall.product.entity.SkuImagesEntity;
 import edu.dlut.catmall.product.entity.SpuInfoDescEntity;
+import edu.dlut.catmall.product.feign.SeckillFeign;
 import edu.dlut.catmall.product.service.*;
+import edu.dlut.catmall.product.vo.SeckillInfoVO;
 import edu.dlut.catmall.product.vo.SkuItemSaleAttrVO;
 import edu.dlut.catmall.product.vo.SkuItemVO;
 import edu.dlut.catmall.product.vo.SpuItemAttrGroupVO;
+import edu.dlut.common.utils.R;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -39,6 +46,12 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
 
     @Resource
     private SkuSaleAttrValueService skuSaleAttrValueService;
+
+    @Resource
+    private ThreadPoolExecutor threadPoolExecutor;
+
+    @Resource
+    private SeckillFeign seckillFeign;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -74,7 +87,6 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
 
         String catelogId = (String) params.get("catelogId");
         if (!StringUtils.isEmpty(catelogId) && !"0".equalsIgnoreCase(catelogId)) {
-
             queryWrapper.eq("catalog_id", catelogId);
         }
 
@@ -116,31 +128,50 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
     }
 
     @Override
-    public SkuItemVO item(Long skuId) {
+    public SkuItemVO item(Long skuId) throws ExecutionException, InterruptedException {
         SkuItemVO skuItemVO = new SkuItemVO();
 
         // sku 基本信息
-        SkuInfoEntity info = getById(skuId);
-        skuItemVO.setInfo(info);
-        Long catalogId = info.getCatalogId();
-        Long spuId = info.getSpuId();
-
-        // sku 图片信息
-        List<SkuImagesEntity> images = imagesService.getImagesBySkuId(skuId);
-        skuItemVO.setImages(images);
+        CompletableFuture<SkuInfoEntity> infoFuture = CompletableFuture.supplyAsync(() -> {
+            SkuInfoEntity info = getById(skuId);
+            skuItemVO.setInfo(info);
+            return info;
+        }, threadPoolExecutor);
 
         // spu 的销售属性组合
-        List<SkuItemSaleAttrVO> saleAttrVOS = skuSaleAttrValueService.getSaleAttrsBySpuId(spuId);
-        skuItemVO.setSaleAttr(saleAttrVOS);
+        CompletableFuture<Void> saleAttrFuture = infoFuture.thenAcceptAsync(res -> {
+            List<SkuItemSaleAttrVO> saleAttrVOS = skuSaleAttrValueService.getSaleAttrsBySpuId(res.getSpuId());
+            skuItemVO.setSaleAttr(saleAttrVOS);
+        }, threadPoolExecutor);
 
         // spu 介绍
-        SpuInfoDescEntity spuInfoDescEntity = spuInfoDescService.getById(spuId);
-        skuItemVO.setDesp(spuInfoDescEntity);
+        CompletableFuture<Void> descFuture = infoFuture.thenAcceptAsync(res -> {
+            SpuInfoDescEntity spuInfoDescEntity = spuInfoDescService.getById(res.getSpuId());
+            skuItemVO.setDesp(spuInfoDescEntity);
+        }, threadPoolExecutor);
 
-        // spu 的规格参数信息
-        List<SpuItemAttrGroupVO> attrGroupVOS = attrGroupService.getAttrGroupWithAttrsBySpuIdAndCatalogId(spuId, catalogId);
-        skuItemVO.setGroupAttrs(attrGroupVOS);
+        CompletableFuture<Void> baseAttrFuture = infoFuture.thenAcceptAsync(res -> {
+            // spu 的规格参数信息
+            List<SpuItemAttrGroupVO> attrGroupVOS = attrGroupService.getAttrGroupWithAttrsBySpuIdAndCatalogId(res.getSpuId(), res.getCatalogId());
+            skuItemVO.setGroupAttrs(attrGroupVOS);
+        }, threadPoolExecutor);
 
+        CompletableFuture<Void> imageFuture = CompletableFuture.runAsync(() -> {
+            // sku 图片信息
+            List<SkuImagesEntity> images = imagesService.getImagesBySkuId(skuId);
+            skuItemVO.setImages(images);
+        }, threadPoolExecutor);
+
+        CompletableFuture<Void> seckillFuture = CompletableFuture.runAsync(() -> {
+            R skuSeckillInfo = seckillFeign.getSkuSeckillInfo(skuId);
+            if (skuSeckillInfo.getCode() == 0) {
+                SeckillInfoVO seckillInfoVO = skuSeckillInfo.getData(new TypeReference<SeckillInfoVO>() {
+                });
+                skuItemVO.setSeckillInfo(seckillInfoVO);
+            }
+        }, threadPoolExecutor);
+
+        CompletableFuture.allOf(saleAttrFuture, descFuture, baseAttrFuture, imageFuture, seckillFuture).get();
         return skuItemVO;
     }
 

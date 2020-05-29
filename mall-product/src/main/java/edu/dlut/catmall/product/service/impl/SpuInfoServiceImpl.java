@@ -119,7 +119,6 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         }).collect(Collectors.toList());
         attrValueService.saveProductAttr(collect);
 
-
         //5、保存spu的积分信息；gulimall_sms->sms_spu_bounds
         Bounds bounds = vo.getBounds();
         SpuBoundTo spuBoundTo = new SpuBoundTo();

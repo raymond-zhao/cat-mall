@@ -24,6 +24,7 @@ import edu.dlut.common.constant.OrderConstant;
 import edu.dlut.common.exception.NoStockException;
 import edu.dlut.common.to.SkuHasStockVO;
 import edu.dlut.common.to.mq.OrderTO;
+import edu.dlut.common.to.mq.SeckillOrderTO;
 import edu.dlut.common.utils.PageUtils;
 import edu.dlut.common.utils.Query;
 import edu.dlut.common.utils.R;
@@ -256,6 +257,28 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         }
 
         return "success";
+    }
+
+    @Override
+    public void createSeckillOrder(SeckillOrderTO seckillOrder) {
+        // TODO 保存完整的订单信息 现在只是个简单的占位方法
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setOrderSn(seckillOrder.getOrderSn());
+        orderEntity.setMemberId(seckillOrder.getMemberId());
+        orderEntity.setStatus(OrderStatusEnum.CREATE_NEW.getCode());
+        BigDecimal result = seckillOrder.getSeckillPrice().multiply(new BigDecimal("" + seckillOrder.getNum()));
+        orderEntity.setPayAmount(result);
+        this.save(orderEntity);
+
+        // TODO 保存订单项信息
+        OrderItemEntity orderItemEntity = new OrderItemEntity();
+        orderItemEntity.setOrderSn(seckillOrder.getOrderSn());
+        orderItemEntity.setRealAmount(result);
+
+        // TODO 获取当前SKU的详细信息进行设置 productFeign.getSpuInfoBySkuId()
+        orderItemEntity.setSkuQuantity(seckillOrder.getNum());
+
+        orderItemService.save(orderItemEntity);
     }
 
     private void saveOrder(OrderCreateTO orderCreateTO) {
