@@ -29,6 +29,8 @@ public enum BizCodeEnum {
 
     SMS_CODE_EXCEPTION(10002,"短信频率太快"),
 
+    TOO_MANY_REQUESTS(10003,"请求频率过高"),
+
     PRODUCT_UP_EXCEPTION(11000, "商品上架异常"),
 
     USERNAME_EXIST_EXCEPTION(15001, "用户名已存在"),

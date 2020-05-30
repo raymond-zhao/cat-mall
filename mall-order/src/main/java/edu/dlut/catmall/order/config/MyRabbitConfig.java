@@ -1,7 +1,6 @@
 package edu.dlut.catmall.order.config;
 
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.connection.CorrelationData;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -19,15 +18,28 @@ import javax.annotation.Resource;
 @Configuration
 public class MyRabbitConfig {
 
-    @Resource
+    // @Resource
     private RabbitTemplate rabbitTemplate;
 
-    @Bean
+    /**
+     * 不手动创建构造器的话会产生循环引用
+     * @param connectionFactory
+     * @return
+     */
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        this.rabbitTemplate = rabbitTemplate;
+        rabbitTemplate.setMessageConverter(messageConverter());
+        initRabbitTemplate();
+        return rabbitTemplate;
+    }
+
+    // @Bean
     public MessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
-    @PostConstruct
+    // @PostConstruct
     public void initRabbitTemplate() {
         rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
 

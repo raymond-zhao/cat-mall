@@ -35,5 +35,5 @@ mybatis-plus:
 
 logging:
   level:
-    edu.dlut.catmall: error
+    edu.dlut.catmall: info
 

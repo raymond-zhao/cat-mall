@@ -1598,3 +1598,20 @@ create table `mq_message` (
 $ git log  --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "added lines: %s, removed lines: %s, total lines: %s\n", add, subs, loc }' -
 ```
 
+## Sentinel流控熔断降级
+
+[Sentinel Wiki - 中文](https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%8D)
+
+## Sleuth+Zipkin链路追踪
+
+[Zipkin](https://zipkin.io/pages/quickstart.html)
+
+```shell
+# docker
+$ docker run -d -p 9411:9411 openzipkin/zipkin
+
+# java
+$ curl -sSL https://zipkin.io/quickstart.sh | bash -s
+$ java -jar zipkin.jar
+```
+

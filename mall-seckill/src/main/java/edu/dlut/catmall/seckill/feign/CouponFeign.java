@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * @DATETIME: 2020/5/29  00:17
  * DESCRIPTION:
  **/
-@FeignClient
+@FeignClient("mall-coupon")
 public interface CouponFeign {
 
     @GetMapping("/coupon/seckillsession/latest3DaySession")

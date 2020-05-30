@@ -1,5 +1,9 @@
 package edu.dlut.catmall.seckill.service.impl;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -13,6 +17,7 @@ import edu.dlut.catmall.seckill.vo.SkuInfoVO;
 import edu.dlut.common.to.mq.SeckillOrderTO;
 import edu.dlut.common.utils.R;
 import edu.dlut.common.vo.MemberResponseVO;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -24,10 +29,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,6 +39,7 @@ import java.util.stream.Collectors;
  * @DATETIME: 2020/5/29  00:15
  * DESCRIPTION:
  **/
+@Slf4j
 @Service
 public class SeckillServiceImpl implements SeckillService {
 
@@ -67,40 +70,51 @@ public class SeckillServiceImpl implements SeckillService {
         R session = couponFeign.getLatest3DaySession();
         if (session.getCode() == 0) {
             // 查询上架商品
-            List<SeckillSessionWithSkus> sessionData = session.getData(new TypeReference<List<SeckillSessionWithSkus>>() {
-            });
+            List<SeckillSessionWithSkus> sessionData = session.getData(new TypeReference<List<SeckillSessionWithSkus>>() {});
             // 缓存到 Redis
-            // 1. 缓存活动信息
-            saveSessionInfo(sessionData);
-            // 2. 缓存活动的关联商品信息
-            saveSessionSkuInfo(sessionData);
+            if (!CollectionUtils.isEmpty(sessionData)) {
+                // 1. 缓存活动信息
+                saveSessionInfo(sessionData);
+                // 2. 缓存活动的关联商品信息
+                saveSessionSkuInfo(sessionData);
+            }
         }
     }
 
+    public List<SeckillSkuRedisTO> handleGetCurrentSeckillSkus(BlockException e) {
+        log.info("回调方法");
+        return new ArrayList<>();
+    }
+
+    @SentinelResource(value = "getCurrentSeckillSkus", blockHandler = "handleGetCurrentSeckillSkus")
     @Override
     public List<SeckillSkuRedisTO> getCurrentSeckillSkus() {
         // 1 确定当前时间属于哪个秒杀场次
         long time = new Date().getTime();
         // 获取以 前缀开头的所有key
         Set<String> keys = stringRedisTemplate.keys(SESSION_CACHE_PREFIX + "*");
-        for (String key : keys) {
-            //  key:  seckill:session:16722xxxxx
-            String newKey = key.replace(SESSION_CACHE_PREFIX, "");
-            String[] timeRange = newKey.split("_");
-            long start = Long.parseLong(timeRange[0]);
-            long end = Long.parseLong(timeRange[1]);
-            if (time >= start && time <= end) {
-                // 获取这个秒杀场次的所有商品信息
-                List<String> range = stringRedisTemplate.opsForList().range(key, -100, 100);
-                BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps(SKUKILL_CACHE_PREFIX);
-                assert range != null;
-                List<String> strings = hashOps.multiGet(range);
-                if (!CollectionUtils.isEmpty(strings)) {
-                    return strings.stream().map(item -> JSON.parseObject(item, SeckillSkuRedisTO.class))
-                            .collect(Collectors.toList());
+        try (Entry entry = SphU.entry("seckillSkus")) {
+            for (String key : keys) {
+                //  key:  seckill:session:16722xxxxx
+                String newKey = key.replace(SESSION_CACHE_PREFIX, "");
+                String[] timeRange = newKey.split("_");
+                long start = Long.parseLong(timeRange[0]);
+                long end = Long.parseLong(timeRange[1]);
+                if (time >= start && time <= end) {
+                    // 获取这个秒杀场次的所有商品信息
+                    List<String> range = stringRedisTemplate.opsForList().range(key, -100, 100);
+                    BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps(SKUKILL_CACHE_PREFIX);
+                    assert range != null;
+                    List<String> strings = hashOps.multiGet(range);
+                    if (!CollectionUtils.isEmpty(strings)) {
+                        return strings.stream().map(item -> JSON.parseObject(item, SeckillSkuRedisTO.class))
+                                .collect(Collectors.toList());
+                    }
+                    break;
                 }
-                break;
             }
+        } catch (BlockException e) {
+            log.info("sentinel回调...", e);
         }
         // 2 获取这个秒杀场次需要的所有商品信息
         return null;
