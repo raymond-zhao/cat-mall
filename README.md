@@ -1,15 +1,4 @@
-# 分布式基础篇-全栈开发
-
-> 这个项目在我本机是可以运行的，但是直接 `clone` 的话是不能直接运行的，因为很多资源我是配置在本地的，而不是配在服务器上的，需要运行的话至少需要以下几个条件。
->
-> - 数据库基础表与数据库连接信息
-> - `Redis`服务器
-> - `ElasticSearch`服务器及相应的索引
-> - `Nginx`服务器及相关页面的静态资源
-> - `nacos server`用于服务注册与发现，以及服务配置。
-> - 阿里云`OSS`对象存储(主要用于图片的显示)
-> - `OAuth2.0`(社交登录)
-> - 最重要的是拥有一定的基础，可以自己调整运行过程中的各种问题。
+# 前言
 
 这是一个跟随 尚硅谷《谷粒商城》- 2020版课程学习开发的分布式电商项目，主要分为三个阶段。
 
@@ -17,13 +6,44 @@
   - 快速地开发一个前后端分离的电商系统
   - Spring Boot + Spring Cloud + Vue + Docker + MyBatis Plus
 - 第二阶段：分布式高级-微服务架构
-  - 打通分布式开发中的所有技术栈
+  - 打通分布式开发中的所有技术栈，ElasticSearch + Redis缓存与Lua脚本 + 性能压测 + Nginx动静分离 负载均衡 + 多线程与异步 + 单点登录与社交登录 + RabbitMQ消息队列 + Redisson分布式锁 + Seata分布式事务 + 定时任务与分布式调度 + Sentinel 服务容错 + Sleuth&Zipkin 链路追踪
   - 实现一整套的微服务整合，包括秒杀，结算，库存...
 - 第三阶段：高可用集群-架构师提升
-  - 搭建MySQL集群，Redis集群，RabbitMQ集群，ElasticSearch集群。
   - 搭建 Kubernetes 集群，实现全流程 DevOps。
+  - 搭建MySQL集群，Redis集群，RabbitMQ集群，ElasticSearch集群。
 
 ![谷粒商城-微服务架构图](https://tva1.sinaimg.cn/large/007S8ZIlly1geblwvpadsj31f10u07dn.jpg)
+
+- [x] 《分布式基础篇-全栈开发》
+
+- [x] 《分布式高级篇-微服务架构》
+- [ ] 《高可用集群篇-架构师提升》
+- [ ] 完善系统功能
+  - [ ] 完善用户 评论、收藏、物流
+  - [ ] `Spring Security`或`Apache Shiro`权限控制
+  - [ ] 增加卖家角色及相关功能
+  - [ ] 增加推荐子系统
+  - [ ] 增加数据仓库与数据挖掘
+  - [ ] 
+
+> 前两部分都已经基本结束了，剩下的就是修修补补，闲下来的时候添加点新功能，但是因为要准备秋招，所以大概率是秋招后才会进行大规模修改。
+>
+> 《高可用集群篇-架构师提升》因为系统配置已经跟不下动了，因为内存严重不足，考虑过在阿里云买几台服务器，但还是决定等到开学以后在学校 256GB 内存的主机上折腾一遍，所以现在只是简单地记录一下 `commands`，混个脸熟，顺便为有条件的朋友省点时间。
+>
+> ---
+>
+> 这个项目在我本机是可以运行的，但是直接 `clone` 的话是不能直接运行的，因为很多资源我是配置在本地的，而不是配在服务器上的，需要运行的话至少需要以下几个条件。
+>
+> - 数据库基础表与数据库连接信息
+> - `Redis`服务器
+> - `ElasticSearch`服务器及相应的索引
+> - `Nginx`服务器及相关页面的静态资源
+> - `nacos server`用于服务注册与发现，以及服务配置。
+> - 阿里云`OSS`对象存储(主要用于图片的显示，密钥配置在了`nacos server`对外不可见)
+> - `OAuth2.0`(社交登录)
+> - 最重要的是拥有一定的基础，可以自己调整运行过程中的各种问题。
+
+# 分布式基础篇-全栈开发
 
 ## 基础环境
 
@@ -104,7 +124,7 @@ $ docker restart redis
 ### 微服务模块
 
 - 项目基础模块: `Product/Ware/Member/Coupon/Order`
-- 公共依赖: `common`
+- 公共依赖: `commons`
 - 后台管理模块: `renren-fast`
 
 ### 初始化数据库
@@ -201,6 +221,8 @@ $ npm run dev # 此时可成功
 
 ## 生成基本CRUD代码
 
+利用逆向工程，运行`renren-generator`项目连接数据库后迅速生成所有后端基础增删改查代码以及前段`Vue`页面。
+
 ## Spring Cloud Alibaba
 
 - [Spring Cloud Alibaba - GitHub](https://github.com/alibaba/spring-cloud-alibaba)
@@ -236,7 +258,7 @@ $ npm run dev # 此时可成功
 ```
 
 ```properties
-spring.application.name: catmall-coupon # 微服务名
+spring.application.name: mall-coupon # 微服务名
 spring.cloud.nacos.discovery.server-addr: localhost:8848 # 注册地址
 ```
 
@@ -256,13 +278,13 @@ spring.cloud.nacos.discovery.server-addr: localhost:8848 # 注册地址
 
 ```java
 // 编写接口
-@FeignClient("catmall-coupon") # 微服务名
+@FeignClient("mall-coupon") // 微服务名
 public interface CouponFeign {
-    @GetMapping("/coupon/coupon/member/list")
+    @GetMapping("/coupon/coupon/member/list")  // 全限定路径
     R memberList();
 }
 
-// 主启动类
+// 主启动类 basePackages 可加可不加
 @EnableFeignClients(basePackages = "edu.dlut.catmall.member.feign")
 ```
 
@@ -277,7 +299,7 @@ public interface CouponFeign {
 
 ```properties
 # bootstrap.properties 启动优先级高于
-spring.application.name=catmall-coupon
+spring.application.name=mall-coupon
 spring.cloud.nacos.config.server-addr=localhost:8848
 ```
 
@@ -445,9 +467,7 @@ export function isAuth (key) {
 }
 ```
 
-
-
-- 可选关闭`eslint `，路径`build/webpack.base.conf.js`
+- 可选关闭`eslint `，路径`build/webpack.base.conf.js`，实际上是必关的。
 
 ```javascript
 const createLintingRule = () => ({
@@ -462,13 +482,11 @@ const createLintingRule = () => ({
 })
 ```
 
-- 表格--自定义列模板
-
 ### OSS对象存储
 
-- 开通服务，设置子账户，给子账户授权。
-
+- 开通服务，设置子账户，给子账户授权，注意要把账号密码配置在`nacos-server`上，要不然总会收到`GitHub`与阿里云发送的微信提醒。
 - [Spring Cloud Alibaba OSS](https://help.aliyun.com/document_detail/91868.html?spm=a2c4g.11186623.2.15.17706e28EQIQWR#concept-ahk-rfz-2fb)
+- [OSS获取服务器签名](https://help.aliyun.com/document_detail/91868.html?spm=a2c4g.11186623.2.15.57276e2888qoXF#concept-ahk-rfz-2fb)
 
 ```xml
 <dependency>
@@ -476,8 +494,6 @@ const createLintingRule = () => ({
     <artifactId>spring-cloud-starter-alicloud-oss</artifactId>
 </dependency>
 ```
-
-- [OSS获取服务器签名](https://help.aliyun.com/document_detail/91868.html?spm=a2c4g.11186623.2.15.57276e2888qoXF#concept-ahk-rfz-2fb)
 
 ### 数据验证
 
@@ -552,6 +568,8 @@ edu.dlut.common.valid.ListValue.message=必须提交指定的值
 
 ## SKU与SPU
 
+> 这两个名词将会贯穿从此开始到高级篇结束的所有内容。
+
 `SPU: Standard Product Unit` （标准产品单位）
 
  SPU是商品信息聚合的最小单位，是一组可复用、易检索的标准化信息的集合，该集合描述了一个产品的特性。通俗点讲，属性值、特性相同的商品就可以称为一个SPU。
@@ -591,7 +609,7 @@ $ docker run --name kibana -e ELASTICSEARCH_HOSTS=http://xxx.xx.xx.xxx:9200 -p 5
 # 其中IP地址一定要改为自己机器或服务器的IP
 ```
 
-本机
+本机`Homebrew`安装
 
 ```shell
 $ brew tap elastic/tap
@@ -636,6 +654,8 @@ PUT customer/external/1 // PUT 和 POST 均可 PUT必须带ID，POST可带可不
 [客户端](https://www.elastic.co/guide/en/elasticsearch/client/index.html)
 
 ### kibana 创建sku索引
+
+> 此索引后来会出现问题，下面有修改。
 
 ```json
 PUT product
@@ -743,6 +763,13 @@ PUT product
 - `SpringBoot`访问项目时会默认寻找`index.html`
 
 ## Nginx域名配置
+
+`Homebrew`操作
+
+```shell
+# 查看 nginx 相关信息
+$ brew info nginx
+```
 
 ```shell
 Docroot is: /usr/local/var/www
@@ -963,7 +990,7 @@ public Map<String, List<Catelog2VO>> getCatalogJson() {
 ```java
 // lua 脚本
 String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
-                stringRedisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Collections.singletonList("lock"), uuid);
+stringRedisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Collections.singletonList("lock"), uuid);
 ```
 
 ## Redisson
@@ -988,11 +1015,11 @@ lock.lock(10, TimeUnit.SECONDS);
 - 在锁时间到了以后，不会自动续期。
 - 如果我们传递了锁的超时时间，就发送给 redis 执行脚本，进行占锁，默认超时就是我们指定的时间
 - 如果我们未指定锁的超时时间，就使用 30*1000[**Lockwatchdog Timeout 看门狗的默认时间**]
-- 只要占锁成功，就会启动一个定时任务【**重新给锁设置过期时间，新的过期时间就是看门狗的默认时间，每隔10s自动续期成30s**】， internalLockLeaseTime[看门狗时间/3 = 10s]
+- 只要占锁成功，就会启动一个定时任务【**重新给锁设置过期时间，新的过期时间就是看门狗的默认时间，每隔10s自动续期成30s**】， `internalLockLeaseTime`[看门狗时间/3 = 10s]
 
 ### 缓存数据一致性
 
-- 双写模式：修改数据后从数据库再查一遍放入缓存
+- 双写模式：修改数据后(写到数据库)从数据库再查一遍放入缓存(写到缓存)
   - 脏数据问题：部分脏数据，缓存过期后又能得到最新的正确数据
 - 失效模式：修改数据后删除缓存，等待下一次请求到来时再重新查询后放入缓存
 - 解决： `canal`
@@ -1282,8 +1309,6 @@ public class MallWebConfig implements WebMvcConfigurer {
     }
 }
 ```
-
-
 
 ## 消息队列-RabbitMQ
 
@@ -1590,8 +1615,6 @@ create table `mq_message` (
 - 队列削峰
   - 1万个商品，每个1000件秒杀。双11 所有秒杀成功的请求，进入队列，慢慢创建订单，扣减库存即可。
 
-
-
 > 查看总的代码行，包括添加了多少行，删除了多少行，现在总共多少行。
 
 ```shell
@@ -1613,5 +1636,90 @@ $ docker run -d -p 9411:9411 openzipkin/zipkin
 # java
 $ curl -sSL https://zipkin.io/quickstart.sh | bash -s
 $ java -jar zipkin.jar
+```
+
+# 高可用集群篇-架构师提升
+
+## Kubernetes
+
+[Kubernetes-中文文档](https://kubernetes.io/zh/)
+
+### 环境准备
+
+- 进入三个虚拟机，开启`root`的密码访问权限
+
+```shell
+$ vargrant ssh xxxxx
+$ su root # password vargrant
+$ vi /etc/ssh/sshd_config
+# 修改 PasswordAuthentication yes
+$ service sshd restart
+# 所有虚拟机设置为 4 core 4G
+```
+
+- 设置`linux`环境(三个结点都要执行)
+
+```shell
+# 关闭防火墙
+$ systemctl stop firewalld
+$ systemctl disable firewalld
+# 关闭 selinux
+$ sed -i 's/enforcing/disabled/' /etc/selinux/config
+# 关闭内存交换
+$ swapoff -a # 临时
+$ sed -ri 's/.*swap.*/#&/' /etc/fstab # 永久
+$ free -g # 验证 swap 必须为 0
+```
+
+- 添加主机名与IP映射
+
+```shell
+$ vi /etc/hosts
+# 前边为网卡地址 后边为集群结点名
+xxxxxxx  k8s-node1
+xxxxxxx  k8s-node2
+xxxxxxx  k8s-node3
+```
+
+- 将桥接的IPv4流量传递到iptables链
+
+```shell
+cat > /etc/sysctl.d/k8s.conf << EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system
+```
+
+### 安装docker
+
+- 卸载系统之前到docker
+
+```shell
+$ sudo yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
+```
+
+- 安装Docker-CE
+
+```shell
+$ sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+# 设置 docker repo 到 yum 位置
+$ sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+# 安装 docker docker-cli
+$ sudo yum install -y docker-ce docker-ce-cli containerd.io
+```
+
+- docker加速
+
+```shell
+$ sudo mkdir -p /etc/docker
+$ sudo tee /etc/docker/daemon.json << -'EOF'
+{
+	"registry-mirrors": [阿里云是个不错的选择]
+}
+EOF
+$ sudo systemctl daemon-reload
+$ sudo systemctl restart docker
+$ sudo systemctl enable docker # 开机自启
 ```
 
