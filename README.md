@@ -15,8 +15,8 @@
 ![谷粒商城-微服务架构图](https://tva1.sinaimg.cn/large/007S8ZIlly1geblwvpadsj31f10u07dn.jpg)
 
 - [x] 《分布式基础篇-全栈开发》
-
 - [x] 《分布式高级篇-微服务架构》
+  - [ ] 单点登录
 - [ ] 《高可用集群篇-架构师提升》
 - [ ] 完善系统功能
   - [ ] 完善用户 评论、收藏、物流
@@ -24,11 +24,10 @@
   - [ ] 增加卖家角色及相关功能
   - [ ] 增加推荐子系统
   - [ ] 增加数据仓库与数据挖掘
-  - [ ] 
 
 > 前两部分都已经基本结束了，剩下的就是修修补补，闲下来的时候添加点新功能，但是因为要准备秋招，所以大概率是秋招后才会进行大规模修改。
 >
-> 《高可用集群篇-架构师提升》因为系统配置已经跟不下动了，因为内存严重不足，考虑过在阿里云买几台服务器，但还是决定等到开学以后在学校 256GB 内存的主机上折腾一遍，所以现在只是简单地记录一下 `commands`，混个脸熟，顺便为有条件的朋友省点时间。
+> 《高可用集群篇-架构师提升》因为系统配置已经跟不下动了，因为内存严重不足，考虑过在阿里云买几台服务器，但还是决定等到开学以后在学校的主机上折腾一遍，现在只进行理论学习。
 >
 > ---
 >
@@ -452,6 +451,7 @@ public class CORSConfig {
 
 }
 ```
+
 ### MyBatis Plus 逻辑删除
 
 ## 使用逆向工程前后端代码
@@ -788,7 +788,6 @@ Or, if you don't want/need a background service you can just run:
 - `Nginx`代理给网关的时候，会丢失请求的`host`信息,手动设置`proxy_set_header Host $host`
 
 ```
-
 #user  nobody;
 worker_processes  1;
 
@@ -1438,7 +1437,7 @@ public class MallFeignConfig {
 - 各种唯一性约束
   - 数据库唯一性约束
   - `redis set`防重
-  -  防重表
+  - 防重表
   - 全局请求唯一ID
 
 #### 下单流程
@@ -1625,6 +1624,20 @@ $ git log  --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1
 
 [Sentinel Wiki - 中文](https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%8D)
 
+| Sentinel       | Hystrix                                        |                               |
+| -------------- | ---------------------------------------------- | ----------------------------- |
+| 隔离策略       | 信号量隔离                                     | 线程池隔离/信号量隔离         |
+| 熔断降级策略   | 基于响应时间或失败比率                         | 基于失败比率                  |
+| 实时指标实现   | 滑动窗口                                       | 滑动窗口（基于 RxJava）       |
+| 规则配置       | 支持多种数据源                                 | 支持多种数据源                |
+| 扩展性         | 多个扩展点                                     | 插件的形式                    |
+| 基于注解的支持 | 支持                                           | 支持                          |
+| 限流           | 基于 QPS，支持基于调用关系的限流               | 有限的支持                    |
+| 流量整形       | 支持慢启动、匀速器模式                         | 不支持                        |
+| 系统负载保护   | 支持                                           | 不支持                        |
+| 控制台         | 开箱即用，可配置规则、查看秒级监控、机器发现等 | 不完善                        |
+| 常见框架的适配 | Servlet、Spring Cloud、Dubbo、gRPC 等          | Servlet、Spring Cloud Netflix |
+
 ## Sleuth+Zipkin链路追踪
 
 [Zipkin](https://zipkin.io/pages/quickstart.html)
@@ -1723,3 +1736,145 @@ $ sudo systemctl restart docker
 $ sudo systemctl enable docker # 开机自启
 ```
 
+## MySQL集群
+
+### 集群类型
+
+- 主从式
+  - 主从复制，同步方式。
+  - 主从调度，控制方式。
+- 分片式
+  - 数据分片存储，片区之间备份。
+- 选主式
+  - 出现容灾时选主，调度时选主。
+
+### Docker安装MySQL-一主两从
+
+> 感觉哪里少了东西
+
+```shell
+$ docker run -p 3306:3306 --name mysql-master \
+-v /mydata/mysql/master/log:/var/log/mysql \
+-v /mydata/mysql/master/data:/var/lib/mysql \
+-v /mydata/mysql/master/conf:/etc/mysql \
+-e MYSQL_ROOT_PASSWORD=root \
+-d mysql:5.7
+
+$ docker run -p 3306:3306 --name mysql-slave-1 \
+-v /mydata/mysql/slave/log:/var/log/mysql \
+-v /mydata/mysql/slave/data:/var/lib/mysql \
+-v /mydata/mysql/slave/conf:/etc/mysql \
+-e MYSQL_ROOT_PASSWORD=root \
+-d mysql:5.7
+
+$ docker run -p 3306:3306 --name mysql-slave-2 \
+-v /mydata/mysql/slave/log:/var/log/mysql \
+-v /mydata/mysql/slave/data:/var/lib/mysql \
+-v /mydata/mysql/slave/conf:/etc/mysql \
+-e MYSQL_ROOT_PASSWORD=root \
+-d mysql:5.7
+```
+
+```shell
+$ vi /mydata/mysql/master/conf/my.cnf
+```
+
+```
+[client]
+default-character-set=utf8
+
+[mysql]
+default-character-set=utf8
+
+[mysqld]
+init_connect='SET collation_connection = utf8_unicode_ci'
+init_connect='SET NAMES utf8'
+character-set-server=utf8
+collation-server=utf8_unicode_ci
+skip-character-set-client-handshake
+skip-name-resolve
+
+# 主从的这个配置仅在于 id 的不同
+server_id=1
+log-bin=mysql-bin
+read-only=0
+binlog-do-db=catmall_ums
+binlog-do-db=catmall_pms
+binlog-do-db=catmall_oms
+binlog-do-db=catmall_sms
+binlog-do-db=catmall_wms
+binlog-do-db=catmall_admin
+
+replicate-ignore-db=mysql
+replicate-ignore-db=sys
+replicate-ignore-db=information_schema
+replicate-ignore-db=performance_schema
+```
+
+- 为master授权用户来同步数据
+
+```shell
+# 进入 master 容器
+$ docker exec -it mysql /bin/bash
+$ mysql -uroot -p
+mysql> grant all priviledges on *.* to 'root'@'%' identified by 'root' with grant option;
+mysql> flush priviledges;
+mysql> GRANT REPLICATION SLAVE ON *.* to 'backup'@'%' identified by '123456';
+show master status
+```
+
+- 设置主库连接
+
+```shell
+change master to master_host='xxxxxxx', matser_user='backup', master_password='123456', master_log_file='mysql-bin.000001', master_log_pos=0, master_port=3307;
+# 启动主从同步
+start slave
+# 查看从库状态
+show slave status
+```
+
+### [Sharding-Sphere](https://shardingsphere.apache.org/document/legacy/4.x/document/cn/overview/)
+
+### Redis集群-三主三从
+
+```shell
+for port in $(seq 7001 7006) \
+do \
+mkdir -p /mydata/redis/node-${port}/conf
+touch /mydata/redis/node-${port}/conf/redis.conf
+cat << EOF >/mydata/redis/node-${port}/conf/redis.conf
+port ${port}
+cluster-enabled yes
+cluster-config-file nodes.conf
+cluster-node-timeout 5000
+cluster-announce-ip xxxxxx
+cluster-announce-port ${port}
+cluster-announce-bus-port ${port}
+appendonly yes
+EOF
+docker run -p ${port}:${port} -p 1${port}:1${port} --name redis-${port} \
+-v /mydata/redis/node-${port}/data:data \
+-v /mydata/redis/node-${port}/conf/redis.conf:/etc/redis/redis/conf \
+-d redis:5.0.7 redis-server /etc/redis/redis.conf
+done
+```
+
+```shell
+$ docker stop ${docker ps -a | grep redis-700 | awk '{print $1}'}
+$ docker rm ${docker ps -a | grep redis-700 | awk '{print $1}'}
+```
+
+- 使用 Redis 建立集群
+
+```shell
+$ docker exec -it redis-7001 bash
+$ redis-cli --cluster create 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 127.0.0.1:7006 --cluster-replicas 1
+```
+
+## ElasticSearch集群
+
+## RabbitMQ集群
+
+## Kubernetes部署
+
+## 流水线
