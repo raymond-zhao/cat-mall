@@ -16,17 +16,18 @@
     <description>Parent Project</description>
 
     <modules>
+        <module>mall-auth-server</module>
+        <module>mall-cart</module>
         <module>mall-coupon</module>
+        <module>mall-gateway</module>
         <module>mall-member</module>
         <module>mall-order</module>
         <module>mall-product</module>
+        <module>mall-search</module>
+        <module>mall-seckill</module>
+        <module>mall-third-party</module>
         <module>mall-ware</module>
         <module>renren-fast</module>
-        <module>renren-generator</module>
-        <module>mall-third-party</module>
-        <module>mall-search</module>
-        <module>mall-cart</module>
-        <module>mall-seckill</module>
     </modules>
 
 </project>

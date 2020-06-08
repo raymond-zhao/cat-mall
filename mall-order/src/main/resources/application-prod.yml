@@ -1,0 +1,45 @@
+server:
+  port: 9000
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/catmall_oms?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+  rabbitmq:
+    host: localhost
+    virtual-host: /
+    publisher-confirm-type: correlated
+    # publisher-confirms: true
+    publisher-returns: true
+    template:
+      mandatory: true
+    listener:
+      simple:
+        acknowledge-mode: manual
+  thymeleaf:
+    cache: false
+  application:
+    name: mall-order
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+  session:
+    store-type: redis
+  redis:
+    host: localhost
+  mvc:
+    date-format: yyyy-MM-dd HH:mm:ss
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/**/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+
+mall:
+  threads:
+    core-pool-size: 20
+    max-pool-size: 200
+    keep-alive-time: 10

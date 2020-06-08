@@ -1854,7 +1854,7 @@ appendonly yes
 EOF
 docker run -p ${port}:${port} -p 1${port}:1${port} --name redis-${port} \
 -v /mydata/redis/node-${port}/data:data \
--v /mydata/redis/node-${port}/conf/redis.conf:/etc/redis/redis/conf \
+-v /mydata/redis/node-${port}/conf/redis.conf:/etc/redis/redis.conf \
 -d redis:5.0.7 redis-server /etc/redis/redis.conf
 done
 ```
