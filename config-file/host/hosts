@@ -1,0 +1,27 @@
+##
+# Host Database
+#
+# localhost is used to configure the loopback interface
+# when the system is booting.  Do not change this entry.
+##
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
+# Added by Docker Desktop
+# To allow the same kube context to work on the host and the container:
+127.0.0.1 kubernetes.docker.internal
+# End of section
+	
+# GitHub 加速
+140.82.114.4    github.com
+185.199.108.153    assets-cdn.github.com
+199.232.69.194    github.global.ssl.fastly.net
+
+127.0.0.1    catmall.com
+127.0.0.1    search.catmall.com
+127.0.0.1    item.catmall.com
+127.0.0.1    auth.catmall.com
+127.0.0.1    cart.catmall.com
+127.0.0.1    order.catmall.com
+127.0.0.1    member.catmall.com
+127.0.0.1    seckill.catmall.com

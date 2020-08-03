@@ -27,7 +27,6 @@
         <module>mall-seckill</module>
         <module>mall-third-party</module>
         <module>mall-ware</module>
-        <module>renren-fast</module>
     </modules>
 
 </project>
