@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @AUTHOR: raymond
  * @DATETIME: 2020/5/20  16:53
- * DESCRIPTION:
+ * DESCRIPTION: 线程池配置类
  **/
 @Configuration
 public class MyThreadConfig {
@@ -23,5 +23,4 @@ public class MyThreadConfig {
                 TimeUnit.SECONDS, new LinkedBlockingDeque<>(100000),
                 Executors.defaultThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
     }
-
 }

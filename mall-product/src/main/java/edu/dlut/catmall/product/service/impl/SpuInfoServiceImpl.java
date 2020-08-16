@@ -119,7 +119,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         }).collect(Collectors.toList());
         attrValueService.saveProductAttr(collect);
 
-        //5、保存spu的积分信息；gulimall_sms->sms_spu_bounds
+        //5、保存spu的积分信息；catmall_sms->sms_spu_bounds
         Bounds bounds = vo.getBounds();
         SpuBoundTo spuBoundTo = new SpuBoundTo();
         BeanUtils.copyProperties(bounds, spuBoundTo);
@@ -177,7 +177,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                 //5.3）、sku的销售属性信息：pms_sku_sale_attr_value
                 skuSaleAttrValueService.saveBatch(skuSaleAttrValueEntities);
 
-                // //5.4）、sku的优惠、满减等信息；gulimall_sms->sms_sku_ladder\sms_sku_full_reduction\sms_member_price
+                // //5.4）、sku的优惠、满减等信息；catmall_sms->sms_sku_ladder\sms_sku_full_reduction\sms_member_price
                 SkuReductionTo skuReductionTo = new SkuReductionTo();
                 BeanUtils.copyProperties(item, skuReductionTo);
                 skuReductionTo.setSkuId(skuId);
@@ -271,7 +271,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
          * Feign 调用流程
          * 1. 构造请求数据 将对象转为 JSON
          *      RequestTemplate
-         * 2. 发送请求进行之星(执行成功会解码相应数据)
+         * 2. 发送请求进行执行(执行成功会解码相应数据)
          *     executeAndDecode(template)
          * 3. 执行请求会有重试机制
          */

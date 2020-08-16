@@ -16,7 +16,6 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -207,7 +206,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                 dataFromDB = getDataFromDB();
             } finally {
                 String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
-                stringRedisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Collections.singletonList("lock"), uuid);
+                stringRedisTemplate.execute(new DefaultRedisScript<>(script, Long.class), Collections.singletonList("lock"), uuid);
             }
 //            String lockFromRedis = stringRedisTemplate.opsForValue().get("lock");
 //            if (uuid.equals(lockFromRedis))

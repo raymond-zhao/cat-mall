@@ -1,14 +1,18 @@
 # 前言
+> 做项目不是为了敲代码，而是为了准备面试，为了学知识，不深入去理解底层原理是达不到面试官的要求的。
+> 项目中可能出现，以及我本人在面试中实际遇到的的面试问题可以查看 Wiki 页面。
+>
+> 就目前来看面试官喜欢问的主要还是RabbitMQ、Redis、线程池...
 
 这是一个跟随 尚硅谷《谷粒商城》- 2020版课程学习开发的分布式电商项目，主要分为三个阶段。
 
-- 第一阶段：分布式基础篇-全栈开发
+- 第一阶段：[分布式基础篇-全栈开发](#分布式基础篇-全栈开发)
   - 快速地开发一个前后端分离的电商系统
   - Spring Boot + Spring Cloud + Vue + Docker + MyBatis Plus
-- 第二阶段：分布式高级-微服务架构
-  - 打通分布式开发中的所有技术栈，ElasticSearch + Redis缓存与Lua脚本 + 性能压测 + Nginx动静分离 负载均衡 + 多线程与异步 + 单点登录与社交登录 + RabbitMQ消息队列 + Redisson分布式锁 + Seata分布式事务 + 定时任务与分布式调度 + Sentinel 服务容错 + Sleuth&Zipkin 链路追踪
+- 第二阶段：[分布式高级-微服务架构](#分布式高级篇-微服务架构)
+  - 打通分布式开发中的所有技术栈，ElasticSearch + Redis缓存与Lua脚本 + 性能压测 + Nginx动静分离、负载均衡 + 多线程与异步 + 单点登录与社交登录 + RabbitMQ消息队列 + Redisson分布式锁 + Seata分布式事务 + 定时任务与分布式调度 + Sentinel 服务容错 + Sleuth&Zipkin 链路追踪
   - 实现一整套的微服务整合，包括秒杀，结算，库存...
-- 第三阶段：高可用集群-架构师提升
+- 第三阶段：[高可用集群-架构师提升](#高可用集群篇-架构师提升)
   - 搭建 Kubernetes 集群，实现全流程 DevOps。
   - 搭建MySQL集群，Redis集群，RabbitMQ集群，ElasticSearch集群。
 
@@ -16,11 +20,10 @@
 
 - [x] 《分布式基础篇-全栈开发》
 - [x] 《分布式高级篇-微服务架构》
-  - [ ] 单点登录
 - [ ] 《高可用集群篇-架构师提升》
 - [ ] 完善系统功能
   - [ ] 完善用户 评论、收藏、物流
-  - [ ] `Spring Security`或`Apache Shiro`权限控制
+  - [x] 系统自动生成了`Apache Shiro`权限控制
   - [ ] 增加卖家角色及相关功能
   - [ ] 增加推荐子系统
   - [ ] 增加数据仓库与数据挖掘
@@ -408,12 +411,12 @@ public List<CategoryEntity> listWithTree() {
 }
 
 /**
-     * 递归查找所有菜单的子菜单
-     *
-     * @param root
-     * @param all
-     * @return
-     */
+* 递归查找所有菜单的子菜单
+*
+* @param root
+* @param all
+* @return
+*/
 private List<CategoryEntity> getChildren(CategoryEntity root, List<CategoryEntity> all) {
     List<CategoryEntity> children = all.stream()
         .filter(categoryEntity -> categoryEntity.getParentCid() == root.getCatId())
@@ -448,13 +451,12 @@ public class CORSConfig {
         source.registerCorsConfiguration("/**", corsConfiguration);
         return new CorsWebFilter(source);
     }
-
 }
 ```
 
 ### MyBatis Plus 逻辑删除
 
-## 使用逆向工程前后端代码
+## 使用逆向工程生成前后端代码
 
 ### 自定义调整
 
@@ -539,9 +541,8 @@ public class ListValueConstraintValidator implements ConstraintValidator<ListVal
     @Override
     public void initialize(ListValue constraintAnnotation) {
         int[] value = constraintAnnotation.value();
-        for (int val : value) {
+        for (int val : value)
             set.add(val);
-        }
     }
 
     /**
@@ -583,7 +584,7 @@ edu.dlut.common.valid.ListValue.message=必须提交指定的值
 
 ## ElasticSearch
 
-Docker
+`Docker`安装
 
 ```shell
 $ docker pull elasticsearch:7.4.2 # 存储和检索数据
@@ -609,7 +610,7 @@ $ docker run --name kibana -e ELASTICSEARCH_HOSTS=http://xxx.xx.xx.xxx:9200 -p 5
 # 其中IP地址一定要改为自己机器或服务器的IP
 ```
 
-本机`Homebrew`安装
+`Homebrew`安装
 
 ```shell
 $ brew tap elastic/tap
@@ -624,7 +625,7 @@ $ brew services start elastic/tap/kibana-full # 开机自启 可选
 $ /usr/local/var/elasticsearch/plugins/ik/config
 ```
 
-### 倒排索引
+### 倒排索引(面试重点)
 
 ### 学习手册
 
@@ -741,6 +742,7 @@ PUT product
 ### Feign调用流程
 
 - 视频135
+- Feign 底层实现原理：动态代理。
 
 ```
 /**
@@ -771,21 +773,7 @@ PUT product
 $ brew info nginx
 ```
 
-```shell
-Docroot is: /usr/local/var/www
-
-The default port has been set in /usr/local/etc/nginx/nginx.conf to 8080 so that
-nginx can run without sudo.
-
-nginx will load all files in /usr/local/etc/nginx/servers/.
-
-To have launchd start nginx now and restart at login:
-  brew services start nginx
-Or, if you don't want/need a background service you can just run:
-  nginx
-```
-
-- `Nginx`代理给网关的时候，会丢失请求的`host`信息,手动设置`proxy_set_header Host $host`
+- `Nginx`代理给网关的时候，会丢失请求的`host`信息，手动设置`proxy_set_header Host $host`
 
 ```
 #user  nobody;
@@ -841,7 +829,7 @@ http {
 
 [NON_GUI](https://jmeter.apache.org/usermanual/get-started.html#non_gui)
 
-```shell
+```
 ================================================================================
 Don't use GUI mode for load testing !, only for Test creation and Test debugging.
 For load testing, use CLI Mode (was NON GUI):
@@ -884,6 +872,8 @@ The script also lets you specify the optional firewall/proxy server information:
 
 ### Nginx动静分离
 
+> [本项目可能问到的Nginx面试题](https://github.com/raymond-zhao/cat-mall/wiki/Nginx)
+
 - 将项目中`static/`下的静态资源移动到`nginx`服务器中，`mac`为`/usr/local/var/www`
 
 - 替换`index.html`中的文件路径
@@ -905,20 +895,15 @@ location /static/ {
 
 ## Redis缓存
 
-缓存逻辑：先查缓存，缓存有则直接返回，缓存无则查数据库，然后将数据库的查询结果放入缓存以便下次使用。
+> 相关问题已整理至 [Wiki 页面]([https://github.com/raymond-zhao/cat-mall/wiki/%E7%BC%93%E5%AD%98](https://github.com/raymond-zhao/cat-mall/wiki/缓存))，面试必备。
 
 ### Redis基本使用
 
 用于缓存商品分类数据
 
-- 堆外内存溢出 `OutOfDirectMemoryError`
+- 堆外内存(直接内存)溢出 `OutOfDirectMemoryError`
 
 ```java
-/**
-* 利用Redis进行缓存商品分类数据
-*
-* @return
-*/
 @Override
 public Map<String, List<Catelog2VO>> getCatalogJson() {
     // TODO 产生堆外内存溢出 OutOfDirectMemoryError
@@ -959,6 +944,18 @@ public Map<String, List<Catelog2VO>> getCatalogJson() {
 | 缓存穿透 | 指查询一个一定不存在的数据，由于缓存是不命中，将去查询数据库，但是数据库也无此记录，我们没有将这次查询的null写入缓存，这将导致这个不存在的数据每次请求都要到存储层去査询，失去了缓存的意义。利用不存在的数据进行攻击，数据库瞬时压力增大，最终导致崩溃 | nul 结果缓存，并加入短暂过期时间                             |
 | 缓存雪崩 | 缓存雪崩是指在我们设置缓存时 key 采用了相同的过期时间，导致缓存在某一时刻同时失效，请求全部转发到 DB, DB 瞬时压力过重雪崩。 | 原有的失效时间基础上增加一个随机值，比如 1-5 分钟随机，这样每一个缓存的过期时间的重复率就会降低，就很难引发集体失效的事件。 |
 
+### 缓存数据一致性
+
+- 双写模式：修改数据后(写到数据库)从数据库再查一遍放入缓存(写到缓存)
+  - 脏数据问题：部分脏数据，缓存过期后又能得到最新的正确数据
+- 失效模式：修改数据后删除缓存，等待下一次请求到来时再重新查询后放入缓存
+- 解决： `canal`
+  - 使用 `canal`更新缓存
+  - 使用 `canal`解决数据易购
+- 本系统的一致性解决方案
+  - 为所有缓存数据设置过期时间，数据过期下一次查询触发主动更新。
+  - 读写数据的时候，加上分布式的读写锁。(读多写少时几乎无影响)
+
 ### 分布式锁
 
 ```java
@@ -974,23 +971,13 @@ public Map<String, List<Catelog2VO>> getCatalogJson() {
 
 ![分布式锁下如何加锁](https://tva1.sinaimg.cn/large/007S8ZIlly1get5dp2mdsj31hp0u0tfq.jpg)
 
-在每一个微服务中的`synchronized(this)`加锁的对象只是当前实例，但是并未对其他微服务的实例产生影响，即使每个微服务加锁后只允许一个请求，加入有8个微服务，仍然会有8个线程存在。
+在每一个微服务中的`synchronized(this)`加锁的对象只是当前实例，但是并未对其他微服务的实例产生影响，即使每个微服务加锁后只允许一个请求，假如有 8 个微服务，仍然会有 8 个线程存在。
 
 #### 锁-时序问题
 
 **确认缓存-查询数据库-结果放入缓存** 这三个操作必须当做一个事务来执行，放在同一把锁里面完成。
 
 ### Redis实现分布式锁🔐
-
-- Redis 实现分布式锁的关键
-  - 原子添加 `Boolean lockResult = stringRedisTemplate.opsForValue().setIfAbsent("lock", uuid, 300, TimeUnit.SECONDS);`
-  - 原子删除
-
-```java
-// lua 脚本
-String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
-stringRedisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Collections.singletonList("lock"), uuid);
-```
 
 ## Redisson
 
@@ -1000,7 +987,7 @@ stringRedisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Co
 
 ```java
 RLock lock = redissonClient.getLock("my-lock");
-lock,lock();
+lock.lock();
 ```
 
 - 阻塞式等待，默认加的锁都是 30s 时间
@@ -1015,18 +1002,6 @@ lock.lock(10, TimeUnit.SECONDS);
 - 如果我们传递了锁的超时时间，就发送给 redis 执行脚本，进行占锁，默认超时就是我们指定的时间
 - 如果我们未指定锁的超时时间，就使用 30*1000[**Lockwatchdog Timeout 看门狗的默认时间**]
 - 只要占锁成功，就会启动一个定时任务【**重新给锁设置过期时间，新的过期时间就是看门狗的默认时间，每隔10s自动续期成30s**】， `internalLockLeaseTime`[看门狗时间/3 = 10s]
-
-### 缓存数据一致性
-
-- 双写模式：修改数据后(写到数据库)从数据库再查一遍放入缓存(写到缓存)
-  - 脏数据问题：部分脏数据，缓存过期后又能得到最新的正确数据
-- 失效模式：修改数据后删除缓存，等待下一次请求到来时再重新查询后放入缓存
-- 解决： `canal`
-  - 使用 `canal`更新缓存
-  - 使用 `canal`解决数据易购
-- 本系统的一致性解决方案
-  - 为所有缓存数据设置过期时间，数据过期下一次查询触发主动更新。
-  - 读写数据的时候，加上分布式的读写锁。(读多写少时几乎无影响)
 
 ## Spring Cache
 
@@ -1197,9 +1172,7 @@ POST _reindex
 
 ## 异步
 
-### 初始化线程的四种方式
-
-### 线程池
+[进程、线程与线程池](https://raymond-zhao.top/2020/07/19/2020-07-19-ProcessAndThread/)
 
 ### `CompletableFuture<T>`
 
@@ -1262,8 +1235,6 @@ POST _reindex
   - 使用装饰者模式进行包装
 
 ### 单点登录
-
-- [ ] 待完成
 
 ## 购物车
 
