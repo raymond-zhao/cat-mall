@@ -738,6 +738,15 @@ PUT product
   "index" : "product"
 }
 ```
+### nginx安装自定义分词，把自定义分词安装到nginx
+docker container cp nginx:/etc/nginx .
+
+
+docker run  -p 80:80 -name nginx \
+-v /mydata/nginx/html:/usr/share/nginx/html \
+-v /mydata/nginx/logs:/var/log/nginx \
+-v /mydata/nginx/conf:/ect/nginx \
+-d nginx:1.10
 
 ### Feign调用流程
 
