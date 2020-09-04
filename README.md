@@ -738,7 +738,7 @@ PUT product
   "index" : "product"
 }
 ```
-### nginx安装自定义分词，把自定义分词安装到nginx
+### 安装nginx 将词库放入nginx，ik分词器向nginx发送请求。
 docker container cp nginx:/etc/nginx .
 
 
