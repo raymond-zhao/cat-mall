@@ -1,16 +1,29 @@
 # 前言
-> 做项目不是为了敲代码，而是为了学知识，学原理，不深入去理解底层原理的话就是普通的CRUD工程师。
-> 项目中涉及的比较重要的内容可以查看 Wiki 页面。
+> 做项目不是为了敲代码，而是为了学知识，学原理，不深入去理解底层原理的话就是普通的 CRUD 工程师。
+> 项目中涉及的比较重要的内容可以查看 Wiki 页面，或者 [awesome-architect](https://raymond-zhao.top/campus-interview/#/)。
 >
-> 就目前来看面试官喜欢问的主要还是RabbitMQ、Redis、线程池...
+> 现在文档中的知识点还比较有限，内容还在持续完善中。以后将会逐渐深入源码，分析学习运行原理与机制。
 
-这是一个跟随 尚硅谷《谷粒商城》- 2020版课程学习开发的分布式电商项目，主要分为三个阶段。
+微服务架构电商系统，主要分为三个阶段。
 
 - 第一阶段：[分布式基础篇-全栈开发](#分布式基础篇-全栈开发)
   - 快速地开发一个前后端分离的电商系统
   - Spring Boot + Spring Cloud + Vue + Docker + MyBatis Plus
-- 第二阶段：[分布式高级-微服务架构](#分布式高级篇-微服务架构)
-  - 打通分布式开发中的所有技术栈，ElasticSearch + Redis缓存与Lua脚本 + 性能压测 + Nginx动静分离、负载均衡 + 多线程与异步 + 单点登录与社交登录 + RabbitMQ消息队列 + Redisson分布式锁 + Seata分布式事务 + 定时任务与分布式调度 + Sentinel 服务容错 + Sleuth&Zipkin 链路追踪
+- 第二阶段：[分布式高级-微服务架构](#分布式高级篇-微服务架构)，打通分布式开发中的所有技术栈。
+  - ElasticSearch
+  - Redis 基本使用与 Lua 脚本
+  - Redisson 分布式锁
+  - 性能压测模拟
+  - Nginx 反向代理、动静分离、负载均衡
+  - 多线程与异步
+  - 单点登录与社交登录
+  - RabbitMQ 消息队列
+  - Nacos 服务注册、发现、配置中心
+  - 分布式事务与 Seata
+  - 秒杀系统设计
+  - 定时任务与分布式调度
+  - Sentinel 服务容错
+  - Sleuth & Zipkin 链路追踪
   - 实现一整套的微服务整合，包括秒杀，结算，库存...
 - 第三阶段：[高可用集群-架构师提升](#高可用集群篇-架构师提升)
   - 搭建 Kubernetes 集群，实现全流程 DevOps。
@@ -22,18 +35,18 @@
 - [x] 《分布式高级篇-微服务架构》
 - [ ] 《高可用集群篇-架构师提升》
 - [ ] 完善系统功能
-  - [ ] 完善用户 评论、收藏、物流
+  - [ ] 完善用户评论、收藏、物流
   - [x] 系统自动生成了`Apache Shiro`权限控制
   - [ ] 增加卖家角色及相关功能
   - [ ] 增加推荐子系统
   - [ ] 增加数据仓库与数据挖掘
 
-> 前两部分都已经基本结束了，剩下的就是修修补补，闲下来的时候添加点新功能，但是因为要准备秋招，所以大概率是秋招后才会进行大规模修改。
->
-> 《高可用集群篇-架构师提升》因为系统配置已经跟不下动了，因为内存严重不足，考虑过在阿里云买几台服务器，但还是决定等到开学以后在学校的主机上折腾一遍，现在只进行理论学习。
->
-> ---
->
+前两部分都已经基本结束了，剩下的就是修修补补，闲下来的时候添加点新功能，但是因为要准备秋招，所以大概率是秋招后才会进行大规模修改。
+
+《高可用集群篇-架构师提升》系统配置已经尽显乏力，内存严重不足，考虑过在阿里云买几台服务器，
+
+但还是决定等到秋招正式落下帷幕之后，再在学校的主机上折腾一遍，Kubernetes 暂停一段落。
+
 > 这个项目在我本机是可以运行的，但是直接 `clone` 的话是不能直接运行的，因为很多资源我是配置在本地的，而不是配在服务器上的，需要运行的话至少需要以下几个条件。
 >
 > - 数据库基础表与数据库连接信息
@@ -49,12 +62,18 @@
 
 ## 基础环境
 
-### CentOS虚拟机
+### 不少于一台 PC
 
-- 购买云服务器
+- 建议使用类 Linux 系统
+
+### CentOS 虚拟机
+
+- 购买阿里云服务器
 - 本地虚拟机
 
-### Docker环境
+### Docker 环境
+
+- [安装 Docker](https://docs.docker.com/engine/install/)
 
 - 安装 MySQL
 
@@ -73,7 +92,7 @@ $ docker ps
 - 配置MySQL编码
 
 
-```
+```mysql
 [client]
 default-character-set=utf8
 
@@ -88,6 +107,8 @@ collation-server=utf8_unicode_ci
 skip-character-set-client-handshake
 skip-name-resolve
 ```
+
+- 重启 MySQL
 
 ```shell
 $ docker restart mysql
@@ -117,31 +138,45 @@ $ vi /mydata/redis/conf/redis.conf
 $ docker restart redis
 ```
 
-- 免费的 mac/windows redis 客户端
-
-[AnotherRedisDesktopManager - GitHub](https://github.com/qishibo/AnotherRedisDesktopManager/releases)
+- 免费的 mac/windows redis 客户端：[AnotherRedisDesktopManager - GitHub](https://github.com/qishibo/AnotherRedisDesktopManager/releases)
 
 ## 开发环境
 
 ### 微服务模块
 
-- 项目基础模块: `Product/Ware/Member/Coupon/Order`
-- 公共依赖: `commons`
-- 后台管理模块: `renren-fast`
+- 项目基础功能模块: 
+  - 商品模块：`mall-product`
+  - 库存模块：`mall-ware`
+  - 会员模块：`mall-member`
+  - 优惠模块：`mall-coupon`
+  - 检索模块：`mall-order`
+  - 秒杀模块：`mall-seckill`
+  - 单点登录：`xxl-sso`
+- 公共依赖: `mall-commons`
+- 后台管理: `renren-fast`
+- 网关模块：`mall-gateway`
+- 授权服务：`mall-auth-server`
+- 第三方应用：`mall-third-party`
+  - 短信服务
+  - OSS 对象存储
+- 配置文件：`config-file`
+- SQL 文件：`sql`
 
 ### 初始化数据库
 
+- 利用 SQL 文件建库建表
+
 ### 逆向工程
 
-[人人开源主页 - 码云](https://gitee.com/renrenio/)
+- [人人开源后台管理 - 码云](https://gitee.com/renrenio/renren-fast)
 
-[人人开源后台管理 - 码云](https://gitee.com/renrenio/renren-fast)
+- [人人开源前台 Vue - 码云](https://gitee.com/renrenio/renren-fast-vue)
 
-[人人开源前台Vue - 码云](https://gitee.com/renrenio/renren-fast-vue)
-
-[人人开源代码生成器 - 码云](https://gitee.com/renrenio/renren-generator)
+- [人人开源代码生成器 - 码云](https://gitee.com/renrenio/renren-generator)
 
 ### Maven
+
+- `settings.xml`
 
 ```xml
 <!-- 阿里云镜像 -->
@@ -199,7 +234,7 @@ $ docker restart redis
 </profile>
 ```
 
-### 修改NPM源
+### Node.js
 
 ```shell
 $ npm config set registry http://registry.npm.taobao.org/
@@ -207,7 +242,7 @@ $ npm config get registry
 $ npm config set registry https://registry.npmjs.org/
 ```
 
-### 视频16出现的坑 node-sass
+- 大坑 node-sass
 
 ```
 Module build failed: Error: Node Sass does not yet support your current environment: OS X 64-bit with Unsupported runtime (72)
@@ -223,18 +258,19 @@ $ npm run dev # 此时可成功
 
 ## 生成基本CRUD代码
 
-利用逆向工程，运行`renren-generator`项目连接数据库后迅速生成所有后端基础增删改查代码以及前段`Vue`页面。
+- 使用 `renren-generator` 模块
+- 修改配置文件中数据库连接信息
+- 运行项目，进入 Web 界面，生成基础增删改查及 `Vue` 模板文件
 
 ## Spring Cloud Alibaba
 
 - [Spring Cloud Alibaba - GitHub](https://github.com/alibaba/spring-cloud-alibaba)
-
 - `Spring Cloud Alibaba Nacos`: 注册中心(服务发现/注册)，配置中心(动态配置管理)
-- `Spring Cloud Ribbon`: 负载均衡
-- `Spring Cloud OpenFeign`: 声明式 `HTTP` 客户端，远程服务调用。
 - `Spring Cloud Alibaba Sentinel`: 服务容错(限流、降级、熔断)
-- `Spring Cloud Sleuth`: 调用链监控
 - `Spring Cloud Alibaba Seata`: 分布式事务解决方案
+- `Spring Cloud OpenFeign`: 声明式 `HTTP` 客户端，远程服务调用。
+- `Spring Cloud Ribbon`: 负载均衡
+- `Spring Cloud Sleuth`: 调用链路监控追踪
 
 ```xml
 <dependencyManagement>
@@ -250,7 +286,7 @@ $ npm run dev # 此时可成功
 </dependencyManagement>
 ```
 
-### Nacos服务注册与发现
+### Nacos 作为服务注册与发现中心
 
 ```xml
 <dependency>
@@ -269,7 +305,7 @@ spring.cloud.nacos.discovery.server-addr: localhost:8848 # 注册地址
 @EnableDiscoveryClient
 ```
 
-### OpenFeign使用
+### OpenFeign 作为服务通信组件
 
 ```xml
 <dependency>
@@ -290,7 +326,7 @@ public interface CouponFeign {
 @EnableFeignClients(basePackages = "edu.dlut.catmall.member.feign")
 ```
 
-### Nacos配置中心
+### Nacos 作为配置中心
 
 ```xml
 <dependency>
@@ -314,7 +350,7 @@ spring.cloud.nacos.config.server-addr=localhost:8848
 
 - 命名空间、配置集、配置集ID、配置分组
 
-### Spring Cloud Gateway
+### Spring Cloud Gateway 作为网关
 
 ```xml
 <dependency>
@@ -323,9 +359,12 @@ spring.cloud.nacos.config.server-addr=localhost:8848
 </dependency>
 ```
 
-## 三级菜单
+## 业务功能
 
-下次遇到再需要生成菜单的业务逻辑，这个基本上就可以直接拿来使用了。
+### 三级菜单
+
+- 下次再遇到需要生成菜单的业务逻辑，这个基本上就可以直接拿来使用了。
+
 
 ### 业务逻辑层
 
@@ -350,42 +389,23 @@ CREATE TABLE `pms_category` (
 public class CategoryEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * 分类id
-	 */
 	@TableId
 	private Long catId;
-	/**
-	 * 分类名称
-	 */
+
 	private String name;
-	/**
-	 * 父分类id
-	 */
+
 	private Long parentCid;
-	/**
-	 * 层级
-	 */
+
 	private Integer catLevel;
-	/**
-	 * 是否显示[0-不显示，1显示]
-	 */
+
 	private Integer showStatus;
-	/**
-	 * 排序
-	 */
+
 	private Integer sort;
-	/**
-	 * 图标地址
-	 */
+
 	private String icon;
-	/**
-	 * 计量单位
-	 */
+
 	private String productUnit;
-	/**
-	 * 商品数量
-	 */
+
 	private Integer productCount;
 
 	@TableField(exist = false)
@@ -432,7 +452,8 @@ private List<CategoryEntity> getChildren(CategoryEntity root, List<CategoryEntit
 
 ### 跨域问题
 
-除了添加这个，还要把`renren-fast`自带的跨域配置给关闭掉。
+- 本系统解决方案：后端统一配置。
+- 除此之外，还要把`renren-fast`自带的跨域配置给关闭掉。
 
 ```java
 @Configuration
@@ -456,9 +477,12 @@ public class CORSConfig {
 
 ### MyBatis Plus 逻辑删除
 
-## 使用逆向工程生成前后端代码
+- 逻辑上的删除，只是更改状态，并不实际删除。
+- 如三级菜单中 `show_status` 字段，逻辑上的删除是指在前端页面进行隐藏，而并不真正删除数据库这条数据。
 
-### 自定义调整
+## 前端代码调整
+
+### 关闭前端权限认证
 
 - 放权`src/util/index.js`
 
@@ -469,7 +493,10 @@ export function isAuth (key) {
 }
 ```
 
+### 关闭 ESLint
+
 - 可选关闭`eslint `，路径`build/webpack.base.conf.js`，实际上是必关的。
+- 因为自动生成的代码中并不符合 ESLint 标准，手动调整格式代价太大。
 
 ```javascript
 const createLintingRule = () => ({
@@ -484,11 +511,12 @@ const createLintingRule = () => ({
 })
 ```
 
-### OSS对象存储
+## 阿里云 OSS
 
-- 开通服务，设置子账户，给子账户授权，注意要把账号密码配置在`nacos-server`上，要不然总会收到`GitHub`与阿里云发送的微信提醒。
+- 开通服务，设置子账户，给子账户授权；
+- 注意要把账号密码配置在 `nacos-server` 上，不要直接写在项目配置文件中，不然总会收到`GitHub`与阿里云发送的短信提醒（可能泄密）。
 - [Spring Cloud Alibaba OSS](https://help.aliyun.com/document_detail/91868.html?spm=a2c4g.11186623.2.15.17706e28EQIQWR#concept-ahk-rfz-2fb)
-- [OSS获取服务器签名](https://help.aliyun.com/document_detail/91868.html?spm=a2c4g.11186623.2.15.57276e2888qoXF#concept-ahk-rfz-2fb)
+- [OSS 获取服务器签名](https://help.aliyun.com/document_detail/91868.html?spm=a2c4g.11186623.2.15.57276e2888qoXF#concept-ahk-rfz-2fb)
 
 ```xml
 <dependency>
@@ -497,7 +525,7 @@ const createLintingRule = () => ({
 </dependency>
 ```
 
-### 数据验证
+## 数据验证
 
 - [前端表单验证-自定义验证](https://element.eleme.cn/#/zh-CN/component/form)
 - 后端`JSR303`校验
@@ -514,6 +542,8 @@ const createLintingRule = () => ({
   - 编写一个自定义的校验注解
   - 编写一个自定义的校验器 `ConstraintValidator`
   - 关联自定义的校验器和自定义的校验注解
+
+> 自定义注解：@ListValue，用作值域，用于验证某个字段取值是否在此值域内。
 
 ```java
 @Documented
@@ -571,25 +601,46 @@ edu.dlut.common.valid.ListValue.message=必须提交指定的值
 
 > 这两个名词将会贯穿从此开始到高级篇结束的所有内容。
 
-`SPU: Standard Product Unit` （标准产品单位）
+- `SPU: Standard Product Unit` （标准产品单位）
+  -  SPU 是商品**信息聚合的最小单位**，是一组可复用、易检索的标准化信息的集合，该集合描述了一个产品的特性。
+  - 通俗点讲，属性值、特性相同的商品就可以称为一个 SPU。
+  - 例如：`iPhone 12`就是一个 SPU，与商家，与颜色、款式、套餐都无关。
 
- SPU是商品信息聚合的最小单位，是一组可复用、易检索的标准化信息的集合，该集合描述了一个产品的特性。通俗点讲，属性值、特性相同的商品就可以称为一个SPU。
- 例如：`iPhone 11`就是一个SPU，与商家，与颜色、款式、套餐都无关。
-
-`SKU: Stock Keeping Unit`(库存量单位) SKU即库存进出计量的单位， 可以是以件、盒、托盘等为单位。
- SKU是物理上不可分割的最小存货单元。在使用时要根据不同业态，不同管理模式来处理。在服装、鞋类商品中使用最多最普遍。
- 例如：`iPhone 11`的颜色(深空灰等)，存储容量(64GB 256GB)
+- `SKU: Stock Keeping Unit`(库存量单位) 
+  - SKU 即库存进出计量的单位， 可以是以件、盒、托盘等为单位。
+  - SKU 是物理上不可分割的**最小存货单元**。在使用时要根据不同业态，不同管理模式来处理。
+  - 在服装、鞋类商品中使用最多最普遍。
+  - 例如： `iPhone 12` 的颜色(深空灰等)，存储容量(64GB 256GB)。
 
 # 分布式高级篇-微服务架构
 
 ## ElasticSearch
 
-`Docker`安装
+### 前置工作
+
+- 通过 Docker 安装
 
 ```shell
 $ docker pull elasticsearch:7.4.2 # 存储和检索数据
 $ dock pull kibana:7.4.2 # 可视化检索数据
 ```
+
+- 通过 `Homebrew` 安装
+
+```shell
+$ brew tap elastic/tap
+$ brew install elastic/tap/elasticsearch-full
+$ elasticsearch
+$ brew services start elastic/tap/elasticsearch-full # 开机自启 可选
+$ brew install kibana/tap/kibana-full
+$ kibana
+$ brew services start elastic/tap/kibana-full # 开机自启 可选
+
+# ik 分词 
+$ /usr/local/var/elasticsearch/plugins/ik/config
+```
+
+- `ElasticSearch` 配置与运行参数
 
 ```shell
 $ mkdir -p /mydata/elasticsearch/config
@@ -605,31 +656,18 @@ $ docker run --name elasticsearch -p 9200:9200 \
 $ chmod -R 777 /mydata/elasticsearch
 ```
 
+- 运行 `Kibana`
+
 ```shell
-$ docker run --name kibana -e ELASTICSEARCH_HOSTS=http://xxx.xx.xx.xxx:9200 -p 5601:5601 -d kibana:7.4.2
 # 其中IP地址一定要改为自己机器或服务器的IP
-```
-
-`Homebrew`安装
-
-```shell
-$ brew tap elastic/tap
-$ brew install elastic/tap/elasticsearch-full
-$ elasticsearch
-$ brew services start elastic/tap/elasticsearch-full # 开机自启 可选
-$ brew install kibana/tap/kibana-full
-$ kibana
-$ brew services start elastic/tap/kibana-full # 开机自启 可选
-
-# ik 分词 
-$ /usr/local/var/elasticsearch/plugins/ik/config
+$ docker run --name kibana -e ELASTICSEARCH_HOSTS=http://xxx.xx.xx.xxx:9200 -p 5601:5601 -d kibana:7.4.2
 ```
 
 ### 倒排索引(面试重点)
 
-### 学习手册
+### 官方开发手册
 
-[ElasticSearch Documentation](https://www.elastic.co/guide/index.html)
+- [ElasticSearch Documentation](https://www.elastic.co/guide/index.html)
 
 #### _cat
 
@@ -650,11 +688,11 @@ PUT customer/external/1 // PUT 和 POST 均可 PUT必须带ID，POST可带可不
 }
 ```
 
-### 整合Spring Boot
+### 整合 Spring Boot
 
-[客户端](https://www.elastic.co/guide/en/elasticsearch/client/index.html)
+- [Elasticsearch Clients](https://www.elastic.co/guide/en/elasticsearch/client/index.html)
 
-### kibana 创建sku索引
+### Kibana 创建 sku 索引
 
 > 此索引后来会出现问题，下面有修改。
 
@@ -739,43 +777,58 @@ PUT product
 }
 ```
 
-### Feign调用流程
+## Feign调用流程
 
-- 视频135
-- Feign 底层实现原理：动态代理。
+> 推荐阅读：
+>
+> - 总结版
+>
+> - [详细版：Feign 原理（图解）](https://www.cnblogs.com/crazymakercircle/p/11965726.html)
 
+### Feign 远程调用丢失请求头问题
+
+`Feign`在远程调用之前要构造请求，此时会丢失请求头`headers`，`request`中包含许多拦截器。
+
+在构建新请求的时候需要吧“老请求”中的数据获取并保存传递到新请求中。
+
+```java
+@Configuration
+public class MallFeignConfig {
+    @Bean("requestInterceptor")
+    public RequestInterceptor requestInterceptor() {
+        return new RequestInterceptor() {
+            @Override
+            public void apply(RequestTemplate template) {
+                ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+                String cookie = requestAttributes.getRequest().getHeader("Cookie");
+                template.header("Cookie", cookie);
+            }
+        };
+    }
+}
 ```
-/**
- * Feign 调用流程
- * 1. 构造请求数据 将对象转为 JSON
- *      RequestTemplate 
- * 2. 发送请求进行之星(执行成功会解码相应数据)
- *     executeAndDecode(template)
- * 3. 执行请求会有重试机制
- */
-```
 
-## 首页渲染
+### Feign异步编排丢失请求头问题
 
-### 整合Thymeleaf
+- 原因：因为`RequestContextHolder`中的`ThreadLocal`只在当前线程可用，线程间独立，而在异步编排时会创建不同的线程执行任务，`ThreadLocal`中的数据将会丢失。
+- 解决办法：在异步编排前首先获取`RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();`，然后在异步任务开始前重新设置进去，`RequestContextHolder.setRequestAttributes(requestAttributes);`
+
+## 页面渲染
+
+### 整合 Thymeleaf
 
 - 关闭缓存`spring.thymeleaf.cache=false`
 - 静态资源都放在`static`文件夹下就可以按照路径直接访问
 - 页面都在`templates`下直接访问
 - `SpringBoot`访问项目时会默认寻找`index.html`
 
-## Nginx域名配置
+## Nginx
 
-`Homebrew`操作
+### 域名配置
 
-```shell
-# 查看 nginx 相关信息
-$ brew info nginx
-```
+- `Nginx`代理给网关的时候，**会丢失请求的`host`信息**，手动设置`proxy_set_header Host $host`。
 
-- `Nginx`代理给网关的时候，会丢失请求的`host`信息，手动设置`proxy_set_header Host $host`
-
-```
+```nginx
 #user  nobody;
 worker_processes  1;
 
@@ -808,16 +861,34 @@ http {
 }
 ```
 
+### 动静分离
+
+> [本项目可能问到的 Nginx 面试题](https://github.com/raymond-zhao/cat-mall/wiki/Nginx)
+
+- 将项目中`static/`下的静态资源移动到`nginx`服务器中，`mac`为`/usr/local/var/www`
+
+- 替换`index.html`中的文件路径
+- 配置`nginx`
+- 重载配置`nginx -s reload`
+
+```
+// 在server块中添加
+location /static/ {
+    root /usr/local/var/www;
+}
+```
+
+
 ## 性能压测
 
 ### 基本概念
 
-- HPS(Hits Per Second): 每秒点击次数
-- TPS(Transaction Per Second)
-- QPS(Query Per Scond)
+- HPS(Hits Per Second)：每秒点击次数
+- TPS(Transaction Per Second)：每秒处理事务次数
+- QPS(Query Per Scond)：每秒查询次数
 - 最大响应时间
 - 最少响应时间
-- 90%响应时间
+- 90% 响应时间
 
 ### JVM
 
@@ -827,7 +898,7 @@ http {
 
 ### Apache JMeter
 
-[NON_GUI](https://jmeter.apache.org/usermanual/get-started.html#non_gui)
+- [NON_GUI](https://jmeter.apache.org/usermanual/get-started.html#non_gui)
 
 ```
 ================================================================================
@@ -841,6 +912,7 @@ Check : https://jmeter.apache.org/usermanual/best-practices.html
 ```
 
 ```shell
+# 执行测试计划
 $ jmeter -n -t testplan/RedisLock.jmx -l testplan/result/result.txt -e -o testplan/webreport
 ```
 
@@ -870,52 +942,34 @@ The script also lets you specify the optional firewall/proxy server information:
 [proxy server port]
 ```
 
-### Nginx动静分离
-
-> [本项目可能问到的Nginx面试题](https://github.com/raymond-zhao/cat-mall/wiki/Nginx)
-
-- 将项目中`static/`下的静态资源移动到`nginx`服务器中，`mac`为`/usr/local/var/www`
-
-- 替换`index.html`中的文件路径
-- 配置`nginx`
-- 重载配置`nginx -s reload`
-
-```
-// 在server块中添加
-location /static/ {
-    root /usr/local/var/www;
-}
-```
-
 ### 压测优化
 
 - JVM
 - 索引
 - 逻辑优化
 
-## Redis缓存
+## Redis
 
-> 相关问题已整理至 [Wiki 页面]([https://github.com/raymond-zhao/cat-mall/wiki/%E7%BC%93%E5%AD%98](https://github.com/raymond-zhao/cat-mall/wiki/缓存))，面试必备。
+> 相关问题已整理至 [Wiki 页面]([https://github.com/raymond-zhao/cat-mall/wiki/%E7%BC%93%E5%AD%98](https://github.com/raymond-zhao/cat-mall/wiki/缓存))。
 
-### Redis基本使用
+### 基本使用
 
-用于缓存商品分类数据
+- 第一个使用场景：缓存商品首页三级菜单
 
-- 堆外内存(直接内存)溢出 `OutOfDirectMemoryError`
+
+- 遇到的问题：堆外内存(直接内存)溢出 `OutOfDirectMemoryError`
+- 分析思路：
+  - SpringBoot2.0 之后默认使用 lettuce 作为操作 Redis 的客户端，lettuce 使用 Netty 进行网络通信。
+  - lettuce 的 bug 导致 Netty 堆外内存溢出，Netty 如果没有指定对外内存 默认使用 JVM 设置的参数，可以通过 `-Dio.netty.maxDirectMemory` 设置堆外内存。
+- 解决方案：
+  - 不能仅仅使用 `-Dio.netty.maxDirectMemory` 去调大堆外内存，堆外内存也是有限的；
+  - 可以选择升级 lettuce 客户端；
+  - 切换使用 jedis 作为客户端；
+  - `RedisTemplate` 对 `lettuce` 与 `jedis` 均进行了封装，所以直接使用。
 
 ```java
 @Override
 public Map<String, List<Catelog2VO>> getCatalogJson() {
-    // TODO 产生堆外内存溢出 OutOfDirectMemoryError
-    /**
-     * 1. SpringBoot2.0之后默认使用 lettuce 作为操作 redis 的客户端，lettuce 使用 Netty 进行网络通信
-     * 2. lettuce 的 bug 导致 Netty 堆外内存溢出 -Xmx300m   Netty 如果没有指定对外内存 默认使用 JVM 设置的参数
-     *      可以通过 -Dio.netty.maxDirectMemory 设置堆外内存
-     * 解决方案：不能仅仅使用 -Dio.netty.maxDirectMemory 去调大堆外内存
-     *      1. 升级 lettuce 客户端   2. 切换使用 jedis
-     *
-     *      RedisTemplate 对 lettuce 与 jedis 均进行了封装 所以直接使用 详情见：RedisAutoConfiguration 类
-     */
     // 给缓存中放入JSON字符串，取出JSON字符串还需要逆转为能用的对象类型
 
     // 1. 加入缓存逻辑， 缓存中存的数据是 JSON 字符串
@@ -932,7 +986,22 @@ public Map<String, List<Catelog2VO>> getCatalogJson() {
     }
 
     Map<String, List<Catelog2VO>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2VO>>>() {});
+    
     return result;
+}
+```
+
+> 关于上面提到的 lettuce Bug，Lettuce 源码。
+
+```java
+private static void incrementMemoryCounter(int capacity) {
+    if (DIRECT_MEMORY_COUNTER != null) {
+        long newUserMemory = DIRECT_MEMORY_COUNTER.addAndGet((long) capacity);
+        if (newUsedMemory > DIRECT_MEMORY_LIMIT) {
+            DIRECT_MEMORY_COUNTER.addAndGet((long) (-capacity));
+            throw new OutOfDirectMemoryError("failed to allocate " + capacity + " byte(s) of direct memory.")
+        }
+    }
 }
 ```
 
@@ -958,30 +1027,22 @@ public Map<String, List<Catelog2VO>> getCatalogJson() {
 
 ### 分布式锁
 
-```java
-/**
-* SpringBoot 所有的组件在容器中默认都是单例的，使用 synchronized (this) 可以实现加锁
-*
-* 得到锁之后 应该再去缓存中确定一次，如果没有的话才需要继续查询
-*
-* 假如有100W个并发请求，首先得到锁的请求开始查询，此时其他的请求将会排队等待锁
-* 等到获得锁的时候再去执行查询，但是此时有可能前一个加锁的请求已经查询成功并且将结果添加到了缓存中
-*/
-```
+- SpringBoot 所有的组件在容器中默认都是单例的，使用 `synchronized (this)` 可以实现加锁；
+- 得到锁之后，应该再去缓存中确定一次，如果没有的话才需要继续查询；
+- 假如有 100W 个并发请求，首先得到锁的请求开始查询，此时其他的请求将会排队等待锁；
+- 等到获得锁的时候再去执行查询，但是此时有可能前一个加锁的请求已经查询成功并且将结果添加到了缓存中。
 
-![分布式锁下如何加锁](https://tva1.sinaimg.cn/large/007S8ZIlly1get5dp2mdsj31hp0u0tfq.jpg)
+> 在每一个微服务中的`synchronized(this)`加锁的对象只是当前实例，但是并未对其他微服务的实例产生影响，即使每个微服务加锁后只允许一个请求，假如有 8 个微服务，仍然会有 8 个线程存在。
 
-在每一个微服务中的`synchronized(this)`加锁的对象只是当前实例，但是并未对其他微服务的实例产生影响，即使每个微服务加锁后只允许一个请求，假如有 8 个微服务，仍然会有 8 个线程存在。
+#### 锁-时序性问题
 
-#### 锁-时序问题
+- **确认缓存-查询数据库-结果放入缓存** 这三个操作必须当做一个事务来执行，放在同一把锁里面完成。
 
-**确认缓存-查询数据库-结果放入缓存** 这三个操作必须当做一个事务来执行，放在同一把锁里面完成。
-
-### Redis实现分布式锁🔐
+### Redis 实现分布式锁🔐
 
 ## Redisson
 
-[Redisson-GitHub Wiki](https://github.com/redisson/redisson/wiki/目录)
+> [Redisson-GitHub Wiki](https://github.com/redisson/redisson/wiki/目录)
 
 ### 看门狗
 
@@ -990,7 +1051,7 @@ RLock lock = redissonClient.getLock("my-lock");
 lock.lock();
 ```
 
-- 阻塞式等待，默认加的锁都是 30s 时间
+- 阻塞式等待，默认加的锁都是 30s 时间。
 - 锁的自动续期，如果业务超长，如果业务运行时间较长，运行期间自动给锁续上新的 30s，不用担心业务时间过长(大于锁的过期时间)导致锁被删掉。
 - 加锁的业务只要运行完成就不会给当前锁续期，即使不手动解锁，锁也会在 30s 后自动删除。
 
@@ -999,7 +1060,7 @@ lock.lock(10, TimeUnit.SECONDS);
 ```
 
 - 在锁时间到了以后，不会自动续期。
-- 如果我们传递了锁的超时时间，就发送给 redis 执行脚本，进行占锁，默认超时就是我们指定的时间
+- 如果我们传递了锁的超时时间，就发送给 redis 执行脚本，进行占锁，默认超时就是我们指定的时间。
 - 如果我们未指定锁的超时时间，就使用 30*1000[**Lockwatchdog Timeout 看门狗的默认时间**]
 - 只要占锁成功，就会启动一个定时任务【**重新给锁设置过期时间，新的过期时间就是看门狗的默认时间，每隔10s自动续期成30s**】， `internalLockLeaseTime`[看门狗时间/3 = 10s]
 
@@ -1010,7 +1071,7 @@ lock.lock(10, TimeUnit.SECONDS);
 ### 常用注解
 
 - `@Cacheable`: Triggers cache population.
-- `@CacheEvict`: Triggers cache eviction. 失效模式下
+- `@CacheEvict`: Triggers cache eviction.
 - `@CachePut`: Updates the cache without interfering with the method execution.
 - `@Caching`: Regroups multiple cache operations to be applied on a method.
 - `@CacheConfig`: Shares some common cache-related settings at class-level.
@@ -1026,7 +1087,7 @@ lock.lock(10, TimeUnit.SECONDS);
 - `key`默认自动生成`category::SimpleKey []` 
   - 自定义接收SpEL：`@Cacheable(value = {"category"}, key= "'name'")`
   - `@Cacheable(value = {"category"}, key = "#root.method.name")`
-- 缓存的`value`的值，默认使用`jdk`序列化机制，将序列化后的数据存到`redis`
+- 缓存的`value`的值，默认使用`JDK`序列化机制，将序列化后的数据存到`Redis`
   - 保存为`JSON`格式原理
   - `CacheAutoConfiguration` -> `RedisCacheConfiguration` -> 自动配置了`RedisCacheManager` -> 初始化所有的缓存 -> 每个缓存决定用什么配置 -> 如果`redisCacheConfiguration`有就用已有的，没有就用默认配置 -> 想改缓存配置，只需要给容器中存放一个`RedisCacheConfiguration`即可 -> 就会应用到当前`RedisCacheManager`管理的所有缓存分区中。
 - 默认`TTL=-1`
@@ -1080,9 +1141,9 @@ public class MyCacheConfig {
 
 ## 检索服务
 
-> 坑：在从首页点击分类名跳转到搜索页时，跳转链接在`catalogLoader.js`中，原静态资源链接为`http://search.gmall.com/`，需要改为自己在HOST文件中配置的域名。
+> 坑：在从首页点击分类名跳转到搜索页时，跳转链接在`catalogLoader.js`中，原静态资源链接为`http://search.gmall.com/`，需要改为自己在 HOST 文件中配置的域名。
 
-### 迁移索引`mapping`
+### 迁移索引 `mapping`
 
 ```json
 // 不要直接删除重建 会丢失已上架的商品数据
@@ -1164,40 +1225,35 @@ POST _reindex
 
 ### 构建检索请求与封装检索结果
 
-- `MallSearchServiceImpl`
+- `mall-search/src/main/java/包名/service/impl/MallSearchServiceImpl`
 
-### 页面排序
+## 多线程与异步
 
-- [ ] `list.html`排序样式未完成，可参考视频`187-189`
+- [进程、线程与线程池](https://raymond-zhao.top/2020/07/19/2020-07-19-ProcessAndThread/)
 
-## 异步
+- ### `CompletableFuture<T>`
 
-[进程、线程与线程池](https://raymond-zhao.top/2020/07/19/2020-07-19-ProcessAndThread/)
 
-### `CompletableFuture<T>`
+### 业务场景 - 商品详情页
 
-#### 业务场景
-
-- 获取SKU基本信息
-- 获取SKU图片信息
-- 获取SKU促销信息
-- 获取SPU所有销售属性
+- 获取 SKU 基本信息
+- 获取 SKU 图片信息
+- 获取 SKU 促销信息
+- 获取 SPU 所有销售属性
 - 获取规格参数组及组下的规格参数
-- SPU详情
+- SPU 详情
 
-#### 创建异步对象
+### CompletableFuture 主要功能
 
-#### 计算完成时回调方法
+- 创建异步对象
+- 计算完成时回调方法
 
-#### `handle`方法
+- `handle`方法
+- 线程串行化
 
-#### 线程串行化
+- 两任务组合
 
-#### 两任务组合
-
-#### 多任务组合
-
-## 商品详情页
+- 多任务组合
 
 ## 认证服务
 
@@ -1205,23 +1261,26 @@ POST _reindex
 
 - 接口防刷
 
-### OAuth2.0之微博登录
+### OAuth2.0 之微博登录
 
-[微博开放平台](https://open.weibo.com/)
+- [微博开放平台](https://open.weibo.com/)
 
-[微博OAuth2.0文档](https://open.weibo.com/wiki/%E6%8E%88%E6%9D%83%E6%9C%BA%E5%88%B6%E8%AF%B4%E6%98%8E)
+- [微博OAuth2.0文档](https://open.weibo.com/wiki/%E6%8E%88%E6%9D%83%E6%9C%BA%E5%88%B6%E8%AF%B4%E6%98%8E)
 
-> 微博登录视频坑:
->
-> 微博回调域名: `auth.catmall.com`，而不是`catmall.com`
->
-> `OAuthController`: `doPost`方法后三个参数需要的是`Map`，均不能写视频中的`null`，需要传入空的`Map`，而且`Map`的顺序有变化，在构建请求条件时应该将`map`传入查询参数`querys`中，而不是请求体`bodys`
->
-> `HttpResponse response = HttpUtils.doPost("https://api.weibo.com", "/oauth2/access_token", "post", new HashMap<>(), map, new HashMap<>());`
+> 微博登录出现的问题：
+
+- 微博回调域名：`auth.catmall.com`，而不是`catmall.com`；
+- `OAuthController`：
+  -  `doPost`方法后三个参数数据类型是`Map`，均不能传入``null`，而是传入空的 `Map`；
+  - 另外`Map`的顺序有变化，在构建请求条件时应该将`map`传入查询参数`querys`中，而不是请求体`bodys`。
+
+```java
+HttpResponse response = HttpUtils.doPost("https://api.weibo.com", "/oauth2/access_token", "post", new HashMap<>(), map, new HashMap<>());
+```
 
 ## Spring Session
 
-[Spring Session Documentation](https://docs.spring.io/spring-session/docs/2.3.0.RELEASE/reference/html5/#introduction)
+- [Spring Session Documentation](https://docs.spring.io/spring-session/docs/2.3.0.RELEASE/reference/html5/#introduction)
 
 ### 对象JDK序列化
 
@@ -1231,33 +1290,31 @@ POST _reindex
   - 给容器中添加了一个组件：`SessionRepository` -> `RedisOperationsSessionRepository`，利用`Redis`来进行`Session`的增删改查等各种操作。
 - `SessionRepositoryFilter`: `Session`存储过滤器，每个请求都必须经过`filter`
   - 创建的时候，自动从容器中获取`SessionRepository`
-  - 原始的`request,response`都被包装成`SessionRepositoryRequestWrapper.SessionRepositoryResponseWrapper`
-  - 使用装饰者模式进行包装
-
-### 单点登录
+  - 原始的`request、response`都被包装成`SessionRepositoryRequestWrapper.SessionRepositoryResponseWrapper`
+  - 使用装饰者模式进行包装。
 
 ## 购物车
 
 - 用户可以在登录状态下将商品加入[在线购物车/用户购物车]
-  - 放入`MongoDB`
-  - 放入`MySQL`
-  - 放入`Redis`(采用)，登录以后，会将临时购物车中的数据合并过来
+  - 放入`MongoDB`；
+  - 放入`MySQL`；
+  - 放入`Redis`(采用)，登录以后，会将临时购物车中的数据合并过来。
 - 用户可以在未登录状态下将商品加入[离线购物车/游客购物车]
-  - 放入`localStorage`
-  - 放入`Cookie`
-  - 放入`WebSQL`
+  - 放入`localStorage`；
+  - 放入`Cookie`；
+  - 放入`WebSQL`；
   - 放入`Redis`(采用)，即使浏览器关闭，临时购物车数据都在。
 
 - 用户可以使用购物车一起结算下单
 - 用户可以添加商品到购物车
 - 用户可以查询自己购物车
-- 用户可以选中商品
+- 用户可以选中购物车中商品
 - 用户可以在购物车中修改购买的商品数量
 - 用户可以在购物车中删除商品
 - 在购物车中展示优惠信息
 - 提示购物车商品价格变化
 
-> 京东给每个用户生成一个值类似于UUID的`user-key`，有效期一个月，存储在`Cookie`，浏览器保存以后，每次访问都会带上这个`cookie`。
+> 京东给每个用户生成一个值类似于 UUID 的`user-key`，有效期一个月，存储在`Cookie`，浏览器保存以后，每次访问都会带上这个`cookie`。
 >
 > 登录后：`session`有用户信息
 >
@@ -1265,7 +1322,7 @@ POST _reindex
 >
 > 第一次使用时，如果没有临时用户，帮忙创建一个临时用户。
 
-### ThreadLocal用户身份鉴别
+### ThreadLocal 用户身份鉴别
 
 - `public class CartInterceptor implements HandlerInterceptor{}`重写`preHandle, postHandle` ，不用加`@Component`
 - 添加`MallWebConfig`
@@ -1280,7 +1337,7 @@ public class MallWebConfig implements WebMvcConfigurer {
 }
 ```
 
-## 消息队列-RabbitMQ(面试超高频)
+## 消息队列 - RabbitMQ (面试高频)
 
 本系统消息队列工作图
 
@@ -1339,7 +1396,7 @@ export PATH=$PATH:$RABBIT_HOME/sbin
 - `@RabbitListener`
 - `@RabbitHandler`
 
-如果是传输对象的话，传输的对象必须实现序列化接口，默认的序列化方式是JDK序列化，但是也可以手动指定序列化的方式。
+如果是传输对象的话，传输的对象必须实现序列化接口，默认的序列化方式是 JDK 序列化，但是也可以手动指定序列化的方式。
 
 ```java
 @Configuration
@@ -1353,131 +1410,7 @@ public class MyRabbitConfig {
 
 ### 可靠投递
 
-## 订单服务
-
-### 基本环境搭建
-
-`Nginx`静态资源，网关等。
-
-### 登录拦截
-
-### Feign远程调用丢失请求头问题
-
-`Feign`在远程调用之前要构造请求，此时会丢失请求头`headers`，`request`中包含许多拦截器。
-
-在构建新请求的时候需要吧“老请求”中的数据获取并保存传递到新请求中。
-
-```java
-@Configuration
-public class MallFeignConfig {
-    @Bean("requestInterceptor")
-    public RequestInterceptor requestInterceptor() {
-        return new RequestInterceptor() {
-            @Override
-            public void apply(RequestTemplate template) {
-                ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-                String cookie = requestAttributes.getRequest().getHeader("Cookie");
-                template.header("Cookie", cookie);
-            }
-        };
-    }
-}
-```
-
-### Feign异步编排丢失请求头问题
-
-- 原因：因为`RequestContextHolder`中的`ThreadLocal`只在当前线程可用，线程间独立，而在异步编排时会创建不同的线程执行任务，`ThreadLocal`中的数据将会丢失。
-- 解决办法：在异步编排前首先获取`RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();`，然后在异步任务开始前重新设置进去，`RequestContextHolder.setRequestAttributes(requestAttributes);`
-
-### 接口幂等性
-
-在确认页点击 **提交订单** 时，用户可能不小心点击多次，所以即使用户点击次数大于1次，也应该保证只提交一次。
-
-- 接口幂等性：保证用户对统一操作发起的一次请求或多次请求的结果时一致的。
-
-#### 应用情况
-
-- 用户多次点击按钮
-- 用户页面回退后再次提交
-- 微服务相互调用，由于网络问题导致请求失败，触发`feign`重试机制
-- 其他业务情况
-
-#### 幂等性解决方案
-
-- Token机制
-  - `Redis Lua`脚本
-- 各种锁机制
-  - 数据库悲观锁、乐观锁
-  - 业务层分布式锁
-- 各种唯一性约束
-  - 数据库唯一性约束
-  - `redis set`防重
-  - 防重表
-  - 全局请求唯一ID
-
-#### 下单流程
-
-```
-下单 创建订单 验证令牌 核算价格 锁定库存
-```
-
-### 分布式事务
-
-![image-20200525153506445](https://tva1.sinaimg.cn/large/007S8ZIlly1gf4qgbev2nj31jx0u049h.jpg)
-
-- CAP定理
-  - C: 一致性，在分布式系统中的所有数据备份，在同一时刻是否有同样的值。
-  - A: 可用性，再急群众一部分结点故障后，集群整体是否还能响应客户端的读写请求。
-  - P: 分区容错性，大多数分布式系统都分布在多个子网络，每个子网络就叫做一个区，分区容错的意思是，区间通信可能失败。
-  - CAP定理指的是以上三点至多只能同时保证两点，不能三者兼顾，一般来说在分布式系统中P不可避免，所以一个系统至多只能包租CP或AP。
-- [Raft定理动画](http://thesecretlivesofdata.com/raft/)
-- BASE定理
-  - 选择AP，舍弃实现C(强一致性)，选择实现弱一致性，保证实现最终一致性。
-  - 基本可用
-  - 软状态
-  - 最终一致性
-
-### 事务传播
-
-- 本地事务失效问题
-  - 同一个对象内事务互调默认失败，原因是绕过了代理对象，而事务是通过代理对象来控制的。
-- 解决方法
-  - 使用代理对象来调用事务方法，引入`spring-boot-starter-aop`，`aop`又引入了`aspectj`
-  - `@EnableAspectJAutoProxy(exposeProxy = true)`，开启`aspectj`动态代理功能，如果不开启的话，默认使用的是`JDKProxy`，开启后以后创建对象采用`aspectj`动态代理(即使没有接口也可以创建代理对象, JDKProxy要求被代理的对象有接口定义)
-  - 本类事务互相调用此时可以实现`AopContext.currentProxy`
-
-### 解决方案
-
-- 2PC(2 phase commit, 二阶段提交)模式
-- 柔性事务-TCC事务补偿性方案
-  - 刚性事务：遵循ACID
-  - 柔性事务：遵循BASE
-- 柔性事务-最大努力通知型方案
-- 柔性事务-可靠消息+最终一致性(异步确保型)
-
-## Seata
-
-> 持续启动失败，选择放弃。
->
-> `no available service 'null' found, please make sure registry config correct`
-
-```mysql
-CREATE TABLE `undo_log` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `branch_id` bigint(20) NOT NULL,
-  `xid` varchar(100) NOT NULL,
-  `context` varchar(128) NOT NULL,
-  `rollback_info` longblob NOT NULL,
-  `log_status` int(11) NOT NULL,
-  `log_created` datetime NOT NULL,
-  `log_modified` datetime NOT NULL,
-  `ext` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ux_undo_log` (`xid`,`branch_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-```
-
-## 延时队列
+### 延时队列
 
 ### Dead Letter Exchanges(DLX) - 死信路由
 
@@ -1520,9 +1453,97 @@ create table `mq_message` (
 ) engine InnoDB default charset=utf8mb4
 ```
 
+## 订单服务
+
+### 基本环境搭建
+
+- 配置 `Nginx` 静态资源，网关等。
+
+### 订单流程
+
+下单->创建订单->验证令牌->核算价格->锁定库存
+
+## 接口幂等性
+
+在确认页点击 **提交订单** 时，用户可能不小心点击多次，所以即使用户点击次数大于1次，也应该保证只提交一次。
+
+- 接口幂等性：保证用户对统一操作发起的一次请求或多次请求的结果时一致的。
+
+### 应用情况
+
+- 用户多次点击按钮
+- 用户页面回退后再次提交
+- 微服务相互调用，由于网络问题导致请求失败，触发`feign`重试机制
+- 其他业务情况
+
+### 幂等性解决方案
+
+- Token机制
+  - `Redis Lua` 脚本
+- 各种锁机制
+  - 数据库悲观锁、乐观锁
+  - 业务层分布式锁
+- 各种唯一性约束
+  - 数据库唯一性约束
+  - `redis set `防重
+  - 防重表
+  - 全局请求唯一ID
+
+## 分布式事务
+
+![image-20200525153506445](https://tva1.sinaimg.cn/large/007S8ZIlly1gf4qgbev2nj31jx0u049h.jpg)
+
+- CAP 定理
+  - C: 一致性，在分布式系统中的所有数据备份，在同一时刻是否有同样的值。
+  - A: 可用性，再急群众一部分结点故障后，集群整体是否还能响应客户端的读写请求。
+  - P: 分区容错性，大多数分布式系统都分布在多个子网络，每个子网络就叫做一个区，分区容错的意思是，区间通信可能失败。
+  - CAP 定理指的是以上三点至多只能同时保证两点，不能三者兼顾，一般来说在分布式系统中 P 不可避免，所以一个系统至多只能满足 CP 或 AP。
+- [Raft定理动画](http://thesecretlivesofdata.com/raft/)
+- BASE 定理
+  - 选择 AP，舍弃实现 C (强一致性)，选择实现弱一致性，保证实现最终一致性。
+  - 基本可用
+  - 软状态
+  - 最终一致性
+
+### 事务传播
+
+- 本地事务失效问题
+  - 同一个对象内事务互调默认失败，原因是绕过了代理对象，而事务是通过代理对象来控制的。
+- 解决方法
+  - 使用代理对象来调用事务方法，引入`spring-boot-starter-aop`，`aop`又引入了`aspectj`
+  - `@EnableAspectJAutoProxy(exposeProxy = true)`，开启`aspectj`动态代理功能，如果不开启的话，默认使用的是`JDKProxy`，开启后以后创建对象采用`aspectj`动态代理(即使没有接口也可以创建代理对象, JDKProxy要求被代理的对象有接口定义)
+  - 本类事务互相调用此时可以实现`AopContext.currentProxy`
+
+### 解决方案
+
+- 2PC(2 phase commit, 二阶段提交)模式
+- 柔性事务-TCC事务补偿性方案
+  - 刚性事务：遵循ACID
+  - 柔性事务：遵循BASE
+- 柔性事务-最大努力通知型方案
+- 柔性事务-可靠消息+最终一致性(异步确保型)
+
+## Seata
+
+```mysql
+CREATE TABLE `undo_log` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `branch_id` bigint(20) NOT NULL,
+  `xid` varchar(100) NOT NULL,
+  `context` varchar(128) NOT NULL,
+  `rollback_info` longblob NOT NULL,
+  `log_status` int(11) NOT NULL,
+  `log_created` datetime NOT NULL,
+  `log_modified` datetime NOT NULL,
+  `ext` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ux_undo_log` (`xid`,`branch_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+```
+
 ## 支付宝支付
 
-[支付宝开放平台](https://open.alipay.com/platform/home.htm)
+- [支付宝开放平台](https://open.alipay.com/platform/home.htm)
 
 ### 加密与解密
 
@@ -1593,7 +1614,7 @@ $ git log  --pretty=tformat: --numstat | awk '{ add += $1; subs += $2; loc += $1
 | 控制台         | 开箱即用，可配置规则、查看秒级监控、机器发现等 | 不完善                        |
 | 常见框架的适配 | Servlet、Spring Cloud、Dubbo、gRPC 等          | Servlet、Spring Cloud Netflix |
 
-## Sleuth+Zipkin链路追踪
+## Sleuth + Zipkin 链路追踪
 
 [Zipkin](https://zipkin.io/pages/quickstart.html)
 
@@ -1703,7 +1724,7 @@ $ sudo systemctl enable docker # 开机自启
 - 选主式
   - 出现容灾时选主，调度时选主。
 
-### Docker安装MySQL-一主两从
+### Docker 安装 MySQL - 一主两从
 
 > 感觉哪里少了东西
 
@@ -1766,7 +1787,7 @@ replicate-ignore-db=information_schema
 replicate-ignore-db=performance_schema
 ```
 
-- 为master授权用户来同步数据
+- 为 master 授权用户来同步数据
 
 ```shell
 # 进入 master 容器
@@ -1790,7 +1811,7 @@ show slave status
 
 ### [Sharding-Sphere](https://shardingsphere.apache.org/document/legacy/4.x/document/cn/overview/)
 
-### Redis集群-三主三从
+### Redis集群 - 三主三从
 
 ```shell
 for port in $(seq 7001 7006) \
