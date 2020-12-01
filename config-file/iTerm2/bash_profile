@@ -1,0 +1,24 @@
+# Settings for Java
+export JAVA_HOME=$(/usr/libexec/java_home)
+
+# Self Defined Commands
+alias cls="clear"
+alias doc="docsify"
+
+# 防止每次输入 "colorls" 所以为 colorls 的常用操作设置别名
+alias ll='colorls -l --sd --gs --group-directories-first'
+alias ls='colorls --group-directories-first'
+
+# 一个shell 命令打印 tree 结构的方法查看当前目录下的目录树结构
+alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
+
+# Setting PATH for Sublime
+export PATH="/usr/local/bin:$PATH"
+alias subl='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl'
+
+# Setting for Typora
+alias typo="open -a Typora"
+
+# Setting PATH for Visual Studio Code
+export PATH=/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin:$PATH
+
