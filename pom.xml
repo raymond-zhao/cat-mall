@@ -2,12 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <dependencies>
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-        </dependency>
-    </dependencies>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -25,6 +19,7 @@
         <module>mall-auth-server</module>
         <module>mall-cart</module>
         <module>mall-coupon</module>
+        <module>mall-commons</module>
         <module>mall-gateway</module>
         <module>mall-member</module>
         <module>mall-order</module>
@@ -34,6 +29,7 @@
         <module>mall-third-party</module>
         <module>mall-ware</module>
         <module>xxl-sso</module>
+        <module>renren-fast</module>
     </modules>
 
 </project>

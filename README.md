@@ -41,22 +41,43 @@
   - [ ] 增加推荐子系统
   - [ ] 增加数据仓库与数据挖掘
 
-前两部分都已经基本结束了，剩下的就是修修补补，闲下来的时候添加点新功能，但是因为要准备秋招，所以大概率是秋招后才会进行大规模修改。
+## 项目重启日志
 
-《高可用集群篇-架构师提升》系统配置已经尽显乏力，内存严重不足，考虑过在阿里云买几台服务器，
+因为准备秋招耽误了许久，现在重新开始，重新启动项目时遇到许多麻烦，下面记录一下大致步骤，避免以后忘记。
 
-但还是决定等到秋招正式落下帷幕之后，再在学校的主机上折腾一遍，Kubernetes 暂停一段落。
+- 使用 `MySQL` 建立相应数据库，并运行相应 `sql` 文件，数据库账号密码为 `root/root`；
+- 下载并启动 `Redis` 服务器
 
-> 这个项目在我本机是可以运行的，但是直接 `clone` 的话是不能直接运行的，因为很多资源我是配置在本地的，而不是配在服务器上的，需要运行的话至少需要以下几个条件。
->
-> - 数据库基础表与数据库连接信息
-> - `Redis`服务器
-> - `ElasticSearch`服务器及相应的索引
+```shell
+$ brew install redis
+$ redis-server /usr/local/etc/redis.conf
+```
+
+- [nacos server](https://nacos.io/zh-cn/docs/quick-start.html) 用于服务注册与发现，以及服务配置，或者下载 [Release 版本](https://github.com/alibaba/nacos/releases)。
+
+```shell
+# 启动命令 ( standalone 代表着单机模式运行，非集群模式)
+$ sh startup.sh -m standalone
+```
+
+- 下载并启动 [Zipkin](https://github.com/openzipkin/zipkin)
+
+```shell
+$ curl -sSL https://zipkin.io/quickstart.sh | bash -s
+$ java -jar zipkin.jar
+```
+
+- 下载并启动 `Elasticsearch`，建立相应的索引。
+
+```shell
+
+```
+
+
+
 > - `Nginx`服务器及相关页面的静态资源
-> - `nacos server`用于服务注册与发现，以及服务配置。
 > - 阿里云`OSS`对象存储(主要用于图片的显示，密钥配置在了`nacos server`对外不可见)
 > - `OAuth2.0`(社交登录)
-> - 最重要的是拥有一定的基础，可以自己调整运行过程中的各种问题。
 
 # 分布式基础篇-全栈开发
 
