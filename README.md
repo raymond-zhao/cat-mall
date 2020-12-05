@@ -810,6 +810,7 @@ PUT product
   "index" : "product"
 }
 ```
+<<<<<<< HEAD
 ### 安装 nginx 将词库放入nginx，ik分词器向nginx发送请求。
 ```shell
 docker container cp nginx:/etc/nginx .
@@ -820,6 +821,8 @@ docker run  -p 80:80 -name nginx \
 -v /mydata/nginx/conf:/ect/nginx \
 -d nginx:1.10
 ```
+=======
+>>>>>>> parent of 6bf9e9f... Update README.md
 
 ## Feign调用流程
 
