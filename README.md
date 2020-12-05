@@ -46,6 +46,8 @@
 因为准备秋招耽误了许久，现在重新开始，重新启动项目时遇到许多麻烦，下面记录一下大致步骤，避免以后忘记。
 
 - 使用 `MySQL` 建立相应数据库，并运行相应 `sql` 文件，数据库账号密码为 `root/root`；
+- 安装  `mall-commons` 到本地 `Maven` 仓库。
+- 添加 `nginx` 动静分离文件，并且启动 `nginx` 服务器。
 - 下载并启动 `Redis` 服务器
 
 ```shell
@@ -73,11 +75,22 @@ $ java -jar zipkin.jar
 
 ```
 
+- 添加 `ik` 分词器
 
 
-> - `Nginx`服务器及相关页面的静态资源
-> - 阿里云`OSS`对象存储(主要用于图片的显示，密钥配置在了`nacos server`对外不可见)
-> - `OAuth2.0`(社交登录)
+
+- 下载并启动 `RabbitMQ`。
+
+
+```shell
+
+```
+
+- 阿里云 `OSS` 对象存储配置信息（用于图片存储）、短信配置。
+
+
+
+> 尚未全部完成，补充中。
 
 # 分布式基础篇-全栈开发
 
@@ -797,15 +810,16 @@ PUT product
   "index" : "product"
 }
 ```
-### 安装nginx 将词库放入nginx，ik分词器向nginx发送请求。
+### 安装 nginx 将词库放入nginx，ik分词器向nginx发送请求。
+```shell
 docker container cp nginx:/etc/nginx .
-
 
 docker run  -p 80:80 -name nginx \
 -v /mydata/nginx/html:/usr/share/nginx/html \
 -v /mydata/nginx/logs:/var/log/nginx \
 -v /mydata/nginx/conf:/ect/nginx \
 -d nginx:1.10
+```
 
 ## Feign调用流程
 
@@ -856,29 +870,22 @@ public class MallFeignConfig {
 
 ### 域名配置
 
-- `Nginx`代理给网关的时候，**会丢失请求的`host`信息**，手动设置`proxy_set_header Host $host`。
+- `Nginx` 代理给网关的时候，**会丢失请求的`host`信息**，手动设置 `proxy_set_header Host $host`。
 
 ```nginx
 #user  nobody;
 worker_processes  1;
-
 #pid        logs/nginx.pid;
-
-
 events {
     worker_connections  1024;
 }
-
-
 http {
     upstream catmall{
        server 127.0.0.1:8888;
     }
-
     server {
         listen       80;
         server_name  catmall.com;
-
         location / {
 	        proxy_set_header HOST $host;
 	        proxy_pass http://catmall;
@@ -886,7 +893,6 @@ http {
             #index  index.html index.htm;
         }
     }
-
     include servers/*;
 }
 ```
@@ -895,11 +901,11 @@ http {
 
 > [本项目可能问到的 Nginx 面试题](https://github.com/raymond-zhao/cat-mall/wiki/Nginx)
 
-- 将项目中`static/`下的静态资源移动到`nginx`服务器中，`mac`为`/usr/local/var/www`
+- 将项目中 `static/` 下的静态资源移动到 `nginx` 服务器中，`mac` 为 `/usr/local/var/www`；
 
-- 替换`index.html`中的文件路径
-- 配置`nginx`
-- 重载配置`nginx -s reload`
+- 替换 `index.html` 中的文件路径；
+- 配置 `nginx`；
+- 重载配置`nginx -s reload`。
 
 ```
 // 在server块中添加
@@ -1407,11 +1413,12 @@ $ docker run -d --name rabbitmq -p 5671:5671 -p 5672:5672 -p 4369:4369 -p 25672:
 
 ```shell
 $ cd 安装目录
-$ # 启用rabbitmq management插件
+$ # 启用 rabbitmq management插件
 $ sudo sbin/rabbitmq-plugins enable rabbitmq_management
 $ # 配置环境变量(可选)
 $ rabbitmq-server -detached # 后台启动
-$ rabbitmqctl status # 查看状态 浏览器内输入 http://localhost:15672,默认的用户名密码都是guest
+# 查看状态 浏览器内输入 http://localhost:15672, 默认的用户名密码都是 guest。
+$ rabbitmqctl status
 $ rabbitmqctl stop # 关闭
 ```
 
