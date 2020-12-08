@@ -27,7 +27,7 @@
   - 实现一整套的微服务整合，包括秒杀，结算，库存...
 - 第三阶段：[高可用集群-架构师提升](#高可用集群篇-架构师提升)
   - 搭建 Kubernetes 集群，实现全流程 DevOps。
-  - 搭建MySQL集群，Redis集群，RabbitMQ集群，ElasticSearch集群。
+  - 搭建 MySQL 集群，Redis 集群，RabbitMQ 集群，ElasticSearch 集群。
 
 ![谷粒商城-微服务架构图](https://tva1.sinaimg.cn/large/007S8ZIlly1geblwvpadsj31f10u07dn.jpg)
 
@@ -36,7 +36,7 @@
 - [ ] 《高可用集群篇-架构师提升》
 - [ ] 完善系统功能
   - [ ] 完善用户评论、收藏、物流
-  - [x] 系统自动生成了`Apache Shiro`权限控制
+  - [x] 系统自动生成了 `Apache Shiro` 权限控制
   - [ ] 增加卖家角色及相关功能
   - [ ] 增加推荐子系统
   - [ ] 增加数据仓库与数据挖掘
@@ -45,9 +45,26 @@
 
 因为准备秋招耽误了许久，现在重新开始，重新启动项目时遇到许多麻烦，下面记录一下大致步骤，避免以后忘记。
 
-- 使用 `MySQL` 建立相应数据库，并运行相应 `sql` 文件，数据库账号密码为 `root/root`；
+系统为 `macOS BigSur`，包管理工具为 `Homebrew`。
+
+- 使用 `MySQL` 建立相应数据库，并运行相应 `sql` 文件，数据库账号密码为 `root/root`。
 - 安装  `mall-commons` 到本地 `Maven` 仓库。
-- 添加 `nginx` 动静分离文件，并且启动 `nginx` 服务器。
+
+```shell
+# 进入到 mall-commons 所在目录
+$ mvn clean
+$ mvn install
+```
+
+- 添加静态文件到 `nginx` 服务器中，并且启动 `nginx` 服务器。在渲染商城首页三级菜单时，如果没有正确显示，需要注意 `catalogLoader.js` 这个文件中的请求地址。
+  - 现在包括 `cart、index、item、login、member、order、register、search` 几个静态资源目录。
+
+```shell
+$ brew install nginx
+$ brew info nginx
+# 静态文件目录 /usr/local/var/www/static
+```
+
 - 下载并启动 `Redis` 服务器
 
 ```shell
@@ -55,42 +72,44 @@ $ brew install redis
 $ redis-server /usr/local/etc/redis.conf
 ```
 
-- [nacos server](https://nacos.io/zh-cn/docs/quick-start.html) 用于服务注册与发现，以及服务配置，或者下载 [Release 版本](https://github.com/alibaba/nacos/releases)。
+- [nacos server](https://nacos.io/zh-cn/docs/quick-start.html) 用于服务注册与发现，或者下载 [Release 版本](https://github.com/alibaba/nacos/releases)。
 
 ```shell
 # 启动命令 ( standalone 代表着单机模式运行，非集群模式)
 $ sh startup.sh -m standalone
 ```
 
-- 下载并启动 [Zipkin](https://github.com/openzipkin/zipkin)
+- 下载并启动 [Zipkin](https://github.com/openzipkin/zipkin)。
 
 ```shell
 $ curl -sSL https://zipkin.io/quickstart.sh | bash -s
 $ java -jar zipkin.jar
 ```
 
-- 下载并启动 `Elasticsearch`，建立相应的索引。
+- 下载并启动 `Elasticsearch`，建立相应的索引 `product`。
 
 ```shell
-
+# 如果内存不是特别大的话，最好设置一下 ES 启动时的虚拟机参数，在 mac 中 Brew 安装目录是
+# /usr/local/Cellar/elasticsearch/7.10.0/libexec/config/jvm.options
 ```
 
-- 添加 `ik` 分词器
+- 添加与 `ElasticSearch` 版本对应的 `ik` 分词器，并将其放入 `ES ` 目录下的 `plugins` 目录下。下载链接 [elasticsearch-analysis-ik](https://github.com/medcl/elasticsearch-analysis-ik/releases)。
 
+```shell
+# mac 终端打开
+$ open /usr/local/Cellar/elasticsearch/7.10.0/libexec/plugins
+```
 
-
-- 下载并启动 `RabbitMQ`。
+- 下载并启动 `RabbitMQ`，在此选择客户端。
 
 
 ```shell
-
+$ brew cask install rabbitmq
 ```
 
-- 阿里云 `OSS` 对象存储配置信息（用于图片存储）、短信配置。
+- 阿里云 `OSS` 对象存储配置信息（用于图片存储）、短信配置，在启动 `mall-thirdparty` 模块时需要配置 `endpoint` 。
 
-
-
-> 尚未全部完成，补充中。
+> 完成上面几个步骤之后，项目启动正常。
 
 # 分布式基础篇-全栈开发
 
@@ -810,7 +829,6 @@ PUT product
   "index" : "product"
 }
 ```
-<<<<<<< HEAD
 ### 安装 nginx 将词库放入nginx，ik分词器向nginx发送请求。
 ```shell
 docker container cp nginx:/etc/nginx .
@@ -821,9 +839,6 @@ docker run  -p 80:80 -name nginx \
 -v /mydata/nginx/conf:/ect/nginx \
 -d nginx:1.10
 ```
-=======
->>>>>>> parent of 6bf9e9f... Update README.md
-
 ## Feign调用流程
 
 > 推荐阅读：
@@ -908,10 +923,10 @@ http {
 
 - 替换 `index.html` 中的文件路径；
 - 配置 `nginx`；
-- 重载配置`nginx -s reload`。
+- 重载配置 `nginx -s reload`。
 
 ```
-// 在server块中添加
+// 在 server 块中添加
 location /static/ {
     root /usr/local/var/www;
 }
@@ -1010,7 +1025,6 @@ The script also lets you specify the optional firewall/proxy server information:
 @Override
 public Map<String, List<Catelog2VO>> getCatalogJson() {
     // 给缓存中放入JSON字符串，取出JSON字符串还需要逆转为能用的对象类型
-
     // 1. 加入缓存逻辑， 缓存中存的数据是 JSON 字符串
     String catalogJSON = stringRedisTemplate.opsForValue().get("catalogJSON");
     if (StringUtils.isEmpty(catalogJSON)) {
@@ -1019,7 +1033,6 @@ public Map<String, List<Catelog2VO>> getCatalogJson() {
         // 3 查到的数据再放入缓存 将对象转为JSON放入缓存
         String cache = JSON.toJSONString(catalogJsonFromDB);
         stringRedisTemplate.opsForValue().set("catalogJSON", cache);
-
         // 4 返回从数据库中查询的数据
         return catalogJsonFromDB;
     }
@@ -1138,7 +1151,6 @@ lock.lock(10, TimeUnit.SECONDS);
 @EnableCaching
 @EnableConfigurationProperties(CacheProperties.class)
 public class MyCacheConfig {
-
     @Bean
     public RedisCacheConfiguration redisCacheConfiguration(CacheProperties cacheProperties) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
@@ -1180,7 +1192,7 @@ public class MyCacheConfig {
 
 ## 检索服务
 
-> 坑：在从首页点击分类名跳转到搜索页时，跳转链接在`catalogLoader.js`中，原静态资源链接为`http://search.gmall.com/`，需要改为自己在 HOST 文件中配置的域名。
+> 坑：在从首页点击分类名跳转到搜索页时，跳转链接在`catalogLoader.js`中，原静态资源链接为`http://search.gmall.com/`，需要改为自己在  HOST  文件中配置的域名。
 
 ### 迁移索引 `mapping`
 
@@ -1270,7 +1282,7 @@ POST _reindex
 
 - [进程、线程与线程池](https://raymond-zhao.top/2020/07/19/2020-07-19-ProcessAndThread/)
 
-- ### `CompletableFuture<T>`
+- `CompletableFuture<T>`
 
 
 ### 业务场景 - 商品详情页
@@ -1287,7 +1299,7 @@ POST _reindex
 - 创建异步对象
 - 计算完成时回调方法
 
-- `handle`方法
+- `handle` 方法
 - 线程串行化
 
 - 两任务组合
@@ -1321,7 +1333,7 @@ HttpResponse response = HttpUtils.doPost("https://api.weibo.com", "/oauth2/acces
 
 - [Spring Session Documentation](https://docs.spring.io/spring-session/docs/2.3.0.RELEASE/reference/html5/#introduction)
 
-### 对象JDK序列化
+### 对象 JDK 序列化
 
 ### Spring Session核心原理
 
@@ -1427,8 +1439,16 @@ $ rabbitmqctl stop # 关闭
 
 ```
 # Setting for RabbitMQ
-export RABBIT_HOME=/Users/raymond/Documents/GitHub/rabbitmq_server-3.8.3
+export RABBIT_HOME=/usr/local/Cellar/rabbitmq/3.8.9_1
 export PATH=$PATH:$RABBIT_HOME/sbin
+```
+
+- Homebrew 安装
+
+```shell
+$ brew install rabbitmq
+# OR
+$ brew cask install rabbitmq
 ```
 
 ### 发送消息
@@ -1610,10 +1630,10 @@ CREATE TABLE `undo_log` (
 限流方式:
 
 - 前端限流: 一些高并发的网站直接在前端页面开始限流。
-- `nginx`限流: 直接负载部分请求到错误的静态页面，令牌算法，漏斗算法。
+- `nginx` 限流: 直接负载部分请求到错误的静态页面，令牌算法，漏斗算法。
 - 网关限流: 限流的过滤器
 - 代码中使用分布式信号量
-- `RabbitMQ`限流，保证发挥所有服务器的性能。
+- `RabbitMQ` 限流，保证发挥所有服务器的性能。
 
 ### CRON表达式
 
@@ -1675,7 +1695,7 @@ $ java -jar zipkin.jar
 
 ### 环境准备
 
-- 进入三个虚拟机，开启`root`的密码访问权限
+- 进入三个虚拟机，开启 `root` 的密码访问权限。
 
 ```shell
 $ vargrant ssh xxxxx
@@ -1700,7 +1720,7 @@ $ sed -ri 's/.*swap.*/#&/' /etc/fstab # 永久
 $ free -g # 验证 swap 必须为 0
 ```
 
-- 添加主机名与IP映射
+- 添加主机名与 IP 映射
 
 ```shell
 $ vi /etc/hosts
@@ -1710,7 +1730,7 @@ xxxxxxx  k8s-node2
 xxxxxxx  k8s-node3
 ```
 
-- 将桥接的IPv4流量传递到iptables链
+- 将桥接的 `IPv4` 流量传递到 `iptables` 链
 
 ```shell
 cat > /etc/sysctl.d/k8s.conf << EOF
@@ -1728,7 +1748,7 @@ sysctl --system
 $ sudo yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
 ```
 
-- 安装Docker-CE
+- 安装 Docker-CE
 
 ```shell
 $ sudo yum install -y yum-utils device-mapper-persistent-data lvm2
@@ -1738,7 +1758,7 @@ $ sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/do
 $ sudo yum install -y docker-ce docker-ce-cli containerd.io
 ```
 
-- docker加速
+- docker 加速
 
 ```shell
 $ sudo mkdir -p /etc/docker
@@ -1752,7 +1772,7 @@ $ sudo systemctl restart docker
 $ sudo systemctl enable docker # 开机自启
 ```
 
-## MySQL集群
+## MySQL 集群
 
 ### 集群类型
 

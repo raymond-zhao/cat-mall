@@ -15,6 +15,10 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `catmall_oms` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+
+USE `catmall_oms`;
+
 --
 -- Table structure for table `oms_order`
 --

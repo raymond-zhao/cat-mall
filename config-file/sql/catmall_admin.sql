@@ -15,6 +15,10 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `catmall_admin` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+
+USE `catmall_admin`;
+
 --
 -- Table structure for table `QRTZ_BLOB_TRIGGERS`
 --
@@ -164,7 +168,7 @@ CREATE TABLE `QRTZ_JOB_DETAILS` (
 
 LOCK TABLES `QRTZ_JOB_DETAILS` WRITE;
 /*!40000 ALTER TABLE `QRTZ_JOB_DETAILS` DISABLE KEYS */;
-INSERT INTO `QRTZ_JOB_DETAILS` VALUES ('RenrenScheduler','TASK_1','DEFAULT',NULL,'io.renren.modules.job.utils.ScheduleJob','0','0','0','0',_binary '¬\í\0sr\0org.quartz.JobDataMapŸ°ƒè¿©°\Ë\0\0xr\0&org.quartz.utils.StringKeyDirtyFlagMap‚\è\Ãû\Å](\0Z\0allowsTransientDataxr\0org.quartz.utils.DirtyFlagMap\æ.­(v\n\Î\0Z\0dirtyL\0mapt\0Ljava/util/Map;xpsr\0java.util.HashMap\ÚÁ\Ã`\Ñ\0F\0\nloadFactorI\0	thresholdxp?@\0\0\0\0\0w\0\0\0\0\0\0t\0\rJOB_PARAM_KEYsr\0.io.renren.modules.job.entity.ScheduleJobEntity\0\0\0\0\0\0\0\0L\0beanNamet\0Ljava/lang/String;L\0\ncreateTimet\0Ljava/util/Date;L\0cronExpressionq\0~\0	L\0jobIdt\0Ljava/lang/Long;L\0paramsq\0~\0	L\0remarkq\0~\0	L\0statust\0Ljava/lang/Integer;xpt\0testTasksr\0java.util.DatehjKYt\0\0xpw\0\0rBøxt\00 0/30 * * * ?sr\0java.lang.Long;‹\äÌ#\ß\0J\0valuexr\0java.lang.Number†¬•”\à‹\0\0xp\0\0\0\0\0\0\0t\0renrent\0å‚æ•°æµ‹è¯•sr\0java.lang.Integerâ ¤÷‡8\0I\0valuexq\0~\0\0\0\0\0x\0');
+INSERT INTO `QRTZ_JOB_DETAILS` VALUES ('RenrenScheduler','TASK_1','DEFAULT',NULL,'io.renren.modules.job.utils.ScheduleJob','0','0','0','0',_binary 'ï¿½\ï¿½\0sr\0org.quartz.JobDataMapï¿½ï¿½ï¿½è¿©ï¿½\ï¿½\0\0xr\0&org.quartz.utils.StringKeyDirtyFlagMapï¿½\ï¿½\ï¿½ï¿½\ï¿½](\0Z\0allowsTransientDataxr\0org.quartz.utils.DirtyFlagMap\ï¿½.ï¿½(v\n\ï¿½\0Z\0dirtyL\0mapt\0Ljava/util/Map;xpsr\0java.util.HashMap\ï¿½ï¿½\ï¿½`\ï¿½\0F\0\nloadFactorI\0	thresholdxp?@\0\0\0\0\0w\0\0\0\0\0\0t\0\rJOB_PARAM_KEYsr\0.io.renren.modules.job.entity.ScheduleJobEntity\0\0\0\0\0\0\0\0L\0beanNamet\0Ljava/lang/String;L\0\ncreateTimet\0Ljava/util/Date;L\0cronExpressionq\0~\0	L\0jobIdt\0Ljava/lang/Long;L\0paramsq\0~\0	L\0remarkq\0~\0	L\0statust\0Ljava/lang/Integer;xpt\0testTasksr\0java.util.Datehjï¿½KYt\0\0xpw\0\0rBï¿½xt\00 0/30 * * * ?sr\0java.lang.Long;ï¿½\ï¿½Ì#\ï¿½\0J\0valuexr\0java.lang.Numberï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½\0\0xp\0\0\0\0\0\0\0t\0renrent\0å‚æ•°æµ‹è¯•sr\0java.lang.Integerâ ¤ï¿½ï¿½ï¿½8\0I\0valuexq\0~\0\0\0\0\0x\0');
 /*!40000 ALTER TABLE `QRTZ_JOB_DETAILS` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -352,7 +356,7 @@ CREATE TABLE `QRTZ_TRIGGERS` (
 
 LOCK TABLES `QRTZ_TRIGGERS` WRITE;
 /*!40000 ALTER TABLE `QRTZ_TRIGGERS` DISABLE KEYS */;
-INSERT INTO `QRTZ_TRIGGERS` VALUES ('RenrenScheduler','TASK_1','DEFAULT','TASK_1','DEFAULT',NULL,1590683400000,-1,5,'WAITING','CRON',1590285977000,0,NULL,2,_binary '¬\í\0sr\0org.quartz.JobDataMapŸ°ƒè¿©°\Ë\0\0xr\0&org.quartz.utils.StringKeyDirtyFlagMap‚\è\Ãû\Å](\0Z\0allowsTransientDataxr\0org.quartz.utils.DirtyFlagMap\æ.­(v\n\Î\0Z\0dirtyL\0mapt\0Ljava/util/Map;xpsr\0java.util.HashMap\ÚÁ\Ã`\Ñ\0F\0\nloadFactorI\0	thresholdxp?@\0\0\0\0\0w\0\0\0\0\0\0t\0\rJOB_PARAM_KEYsr\0.io.renren.modules.job.entity.ScheduleJobEntity\0\0\0\0\0\0\0\0L\0beanNamet\0Ljava/lang/String;L\0\ncreateTimet\0Ljava/util/Date;L\0cronExpressionq\0~\0	L\0jobIdt\0Ljava/lang/Long;L\0paramsq\0~\0	L\0remarkq\0~\0	L\0statust\0Ljava/lang/Integer;xpt\0testTasksr\0java.util.DatehjKYt\0\0xpw\0\0rBøxt\00 0/30 * * * ?sr\0java.lang.Long;‹\äÌ#\ß\0J\0valuexr\0java.lang.Number†¬•”\à‹\0\0xp\0\0\0\0\0\0\0t\0renrent\0å‚æ•°æµ‹è¯•sr\0java.lang.Integerâ ¤÷‡8\0I\0valuexq\0~\0\0\0\0\0x\0');
+INSERT INTO `QRTZ_TRIGGERS` VALUES ('RenrenScheduler','TASK_1','DEFAULT','TASK_1','DEFAULT',NULL,1590683400000,-1,5,'WAITING','CRON',1590285977000,0,NULL,2,_binary 'ï¿½\ï¿½\0sr\0org.quartz.JobDataMapï¿½ï¿½ï¿½è¿©ï¿½\ï¿½\0\0xr\0&org.quartz.utils.StringKeyDirtyFlagMapï¿½\ï¿½\ï¿½ï¿½\ï¿½](\0Z\0allowsTransientDataxr\0org.quartz.utils.DirtyFlagMap\ï¿½.ï¿½(v\n\ï¿½\0Z\0dirtyL\0mapt\0Ljava/util/Map;xpsr\0java.util.HashMap\ï¿½ï¿½\ï¿½`\ï¿½\0F\0\nloadFactorI\0	thresholdxp?@\0\0\0\0\0w\0\0\0\0\0\0t\0\rJOB_PARAM_KEYsr\0.io.renren.modules.job.entity.ScheduleJobEntity\0\0\0\0\0\0\0\0L\0beanNamet\0Ljava/lang/String;L\0\ncreateTimet\0Ljava/util/Date;L\0cronExpressionq\0~\0	L\0jobIdt\0Ljava/lang/Long;L\0paramsq\0~\0	L\0remarkq\0~\0	L\0statust\0Ljava/lang/Integer;xpt\0testTasksr\0java.util.Datehjï¿½KYt\0\0xpw\0\0rBï¿½xt\00 0/30 * * * ?sr\0java.lang.Long;ï¿½\ï¿½Ì#\ï¿½\0J\0valuexr\0java.lang.Numberï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½\0\0xp\0\0\0\0\0\0\0t\0renrent\0å‚æ•°æµ‹è¯•sr\0java.lang.Integerâ ¤ï¿½ï¿½ï¿½8\0I\0valuexq\0~\0\0\0\0\0x\0');
 /*!40000 ALTER TABLE `QRTZ_TRIGGERS` ENABLE KEYS */;
 UNLOCK TABLES;
 
