@@ -58,13 +58,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         List<CategoryEntity> entities = baseMapper.selectList(null); // 传入 null 代表查询所有
 
         // 2. 组装成树形结构
-        List<CategoryEntity> levelMenu = entities.stream()
+        return entities.stream()
                 .filter(categoryEntity -> categoryEntity.getParentCid() == 0)
                 .map(menu -> {
                     menu.setChildren(getChildren(menu, entities));
                     return menu;
                 }).sorted((m1, m2) -> m1.getSort() == null ? 0 : m1.getSort() - (m2.getSort() == null ? 0 : m2.getSort())).collect(Collectors.toList());
-        return levelMenu;
     }
 
     @Override
@@ -112,7 +111,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         List<CategoryEntity> selectList = baseMapper.selectList(null);
         List<CategoryEntity> level1Categories = getParent_cid(selectList, 0L);
 
-        Map<String, List<Catelog2VO>> parentCid = level1Categories.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+        return level1Categories.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
             List<CategoryEntity> categoryEntities = getParent_cid(selectList, v.getCatId());
             List<Catelog2VO> catelog2VOS = null;
             if (!CollectionUtils.isEmpty(categoryEntities)) {
@@ -131,7 +130,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             }
             return catelog2VOS;
         }));
-        return parentCid;
     }
 
     /**
@@ -165,15 +163,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         String catalogJSON = stringRedisTemplate.opsForValue().get("catalogJSON");
         if (StringUtils.isEmpty(catalogJSON)) {
             // 2 如果缓存未命中 则查询数据库
-            Map<String, List<Catelog2VO>> catalogJsonFromDB = getCatalogJsonFromDBWithRedisLock();
-
             // 4 返回从数据库中查询的数据
-            return catalogJsonFromDB;
+            return getCatalogJsonFromDBWithRedisLock();
         }
 
-        Map<String, List<Catelog2VO>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2VO>>>() {
-        });
-        return result;
+        return JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2VO>>>() {});
     }
 
     public Map<String, List<Catelog2VO>> getCatalogJsonFromDBWithRedissonLock() {
@@ -222,9 +216,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     private Map<String, List<Catelog2VO>> getDataFromDB() {
         String catalogJSON = stringRedisTemplate.opsForValue().get("catalogJSON");
         if (!StringUtils.isEmpty(catalogJSON)) {
-            Map<String, List<Catelog2VO>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2VO>>>() {
+            return JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2VO>>>() {
             });
-            return result;
+            
         }
 
         List<CategoryEntity> selectList = baseMapper.selectList(null);
@@ -238,10 +232,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                     Catelog2VO catelog2VO = new Catelog2VO(v.getCatId().toString(), null, l2.getCatId().toString(), l2.getName());
                     List<CategoryEntity> level3Catalog = getParent_cid(selectList, l2.getCatId());
                     if (!CollectionUtils.isEmpty(level3Catalog)) {
-                        List<Catelog2VO.Catelog3VO> collect = level3Catalog.stream().map(l3 -> {
-                            Catelog2VO.Catelog3VO catelog3VO = new Catelog2VO.Catelog3VO(l2.getCatId().toString(), l3.getCatId().toString(), l3.getName());
-                            return catelog3VO;
-                        }).collect(Collectors.toList());
+                        List<Catelog2VO.Catelog3VO> collect = level3Catalog.stream().map(l3 -> new Catelog2VO.Catelog3VO(l2.getCatId().toString(), l3.getCatId().toString(), l3.getName())).collect(Collectors.toList());
                         catelog2VO.setCatalog3List(collect);
                     }
                     return catelog2VO;
@@ -301,15 +292,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
      * @return
      */
     private List<CategoryEntity> getChildren(CategoryEntity root, List<CategoryEntity> all) {
-        List<CategoryEntity> children = all.stream()
-                .filter(categoryEntity -> categoryEntity.getParentCid() == root.getCatId())
-                .map(categoryEntity -> {
-                    categoryEntity.setChildren(getChildren(categoryEntity, all));
-                    return categoryEntity;
-                })
+        return all.stream()
+                .filter(categoryEntity -> categoryEntity.getParentCid().equals(root.getCatId()))
+                .peek(categoryEntity -> categoryEntity.setChildren(getChildren(categoryEntity, all)))
                 .sorted((m1, m2) -> m1.getSort() == null ? 0 : m1.getSort() - (m2.getSort() == null ? 0 : m2.getSort()))
                 .collect(Collectors.toList());
-        return children;
     }
 
 }

@@ -23,7 +23,6 @@ public class MyRedissonConfig {
 
         Config config = new Config();
         config.useSingleServer().setAddress("redis://127.0.0.1:6379");
-        RedissonClient redisson = Redisson.create(config);
-        return redisson;
+        return Redisson.create(config);
     }
 }
