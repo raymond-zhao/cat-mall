@@ -57,6 +57,7 @@ $ mvn install
 ```
 
 - 添加静态文件到 `nginx` 服务器中，并且启动 `nginx` 服务器。在渲染商城首页三级菜单时，如果没有正确显示，需要注意 `catalogLoader.js` 这个文件中的请求地址。
+  - 为减少一些 GitHub 仓库大小，放到了百度云上。静态资源下载地址：[链接](https://pan.baidu.com/s/1JsWbJp_gGSOdisw505PK_g)，密码: `nca7`，下载后将其放到 `/usr/local/var/www` 目录下，非 `Homebrew` 安装的 `Nginx` 需要注意一些路径。
   - 现在包括 `cart、index、item、login、member、order、register、search` 几个静态资源目录。
 
 ```shell
@@ -72,23 +73,25 @@ $ brew install redis
 $ redis-server /usr/local/etc/redis.conf
 ```
 
-- [nacos server](https://nacos.io/zh-cn/docs/quick-start.html) 用于服务注册与发现，或者下载 [Release 版本](https://github.com/alibaba/nacos/releases)。
+- [nacos server](https://nacos.io/zh-cn/docs/quick-start.html) 用于服务注册与发现，本项目版本 `1.2.1`，或者下载 [Release 版本](https://github.com/alibaba/nacos/releases)。
 
 ```shell
 # 启动命令 ( standalone 代表着单机模式运行，非集群模式)
 $ sh startup.sh -m standalone
+// localhost:8848/nacos
 ```
 
-- 下载并启动 [Zipkin](https://github.com/openzipkin/zipkin)。
+- 下载并启动 [Zipkin](https://github.com/openzipkin/zipkin)，本项目版本 `2.23.0`。
 
 ```shell
 $ curl -sSL https://zipkin.io/quickstart.sh | bash -s
 $ java -jar zipkin.jar
 ```
 
-- 下载并启动 `Elasticsearch`，建立相应的索引 `product`。
+- 下载并启动 `Elasticsearch`，建立相应的索引 `product`（下文有）。
 
 ```shell
+$ brew install elasticsearch
 # 如果内存不是特别大的话，最好设置一下 ES 启动时的虚拟机参数，在 mac 中 Brew 安装目录是
 # /usr/local/Cellar/elasticsearch/7.10.0/libexec/config/jvm.options
 ```
@@ -109,7 +112,7 @@ $ brew cask install rabbitmq
 
 - 阿里云 `OSS` 对象存储配置信息（用于图片存储）、短信配置，在启动 `mall-thirdparty` 模块时需要配置 `endpoint` 。
 
-> 完成上面几个步骤之后，项目启动正常。
+> 完成上面几个步骤之后，项目正常启动。
 
 # 分布式基础篇-全栈开发
 
@@ -117,11 +120,9 @@ $ brew cask install rabbitmq
 
 ### 不少于一台 PC
 
-- 建议使用类 Linux 系统
+- CentOS 虚拟机
 
-### CentOS 虚拟机
-
-- 购买阿里云服务器
+- 阿里云服务器
 - 本地虚拟机
 
 ### Docker 环境
@@ -213,7 +214,6 @@ $ docker restart redis
   - 短信服务
   - OSS 对象存储
 - 配置文件：`config-file`
-- SQL 文件：`sql`
 
 ### 初始化数据库
 
@@ -295,7 +295,7 @@ $ npm config get registry
 $ npm config set registry https://registry.npmjs.org/
 ```
 
-- 大坑 node-sass
+- 大坑 `node-sass`
 
 ```
 Module build failed: Error: Node Sass does not yet support your current environment: OS X 64-bit with Unsupported runtime (72)
@@ -416,8 +416,6 @@ spring.cloud.nacos.config.server-addr=localhost:8848
 
 ### 三级菜单
 
-- 下次再遇到需要生成菜单的业务逻辑，这个基本上就可以直接拿来使用了。
-
 
 ### 业务逻辑层
 
@@ -511,7 +509,6 @@ private List<CategoryEntity> getChildren(CategoryEntity root, List<CategoryEntit
 ```java
 @Configuration
 public class CORSConfig {
-
     @Bean
     public CorsWebFilter corsWebFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -548,8 +545,7 @@ export function isAuth (key) {
 
 ### 关闭 ESLint
 
-- 可选关闭`eslint `，路径`build/webpack.base.conf.js`，实际上是必关的。
-- 因为自动生成的代码中并不符合 ESLint 标准，手动调整格式代价太大。
+- 可选关闭 `eslint `，路径 `build/webpack.base.conf.js`。
 
 ```javascript
 const createLintingRule = () => ({
@@ -567,7 +563,7 @@ const createLintingRule = () => ({
 ## 阿里云 OSS
 
 - 开通服务，设置子账户，给子账户授权；
-- 注意要把账号密码配置在 `nacos-server` 上，不要直接写在项目配置文件中，不然总会收到`GitHub`与阿里云发送的短信提醒（可能泄密）。
+- 注意要把账号密码配置在 `nacos-server` 上，不要直接写在项目配置文件中，不然总会收到 `GitHub` 与阿里云发送的短信提醒（可能泄密）。
 - [Spring Cloud Alibaba OSS](https://help.aliyun.com/document_detail/91868.html?spm=a2c4g.11186623.2.15.17706e28EQIQWR#concept-ahk-rfz-2fb)
 - [OSS 获取服务器签名](https://help.aliyun.com/document_detail/91868.html?spm=a2c4g.11186623.2.15.57276e2888qoXF#concept-ahk-rfz-2fb)
 
@@ -618,7 +614,6 @@ public @interface ListValue {
 
 ```java
 public class ListValueConstraintValidator implements ConstraintValidator<ListValue,Integer> {
-
     private Set<Integer> set = new HashSet<>();
     //初始化方法
     @Override
@@ -650,7 +645,7 @@ edu.dlut.common.valid.ListValue.message=必须提交指定的值
 @ListValue(value = {0, 1}, groups = {AddGroup.class, UpdateStatusGroup.class})
 ```
 
-## SKU与SPU
+## SKU 与 SPU
 
 > 这两个名词将会贯穿从此开始到高级篇结束的所有内容。
 
@@ -716,7 +711,7 @@ $ chmod -R 777 /mydata/elasticsearch
 $ docker run --name kibana -e ELASTICSEARCH_HOSTS=http://xxx.xx.xx.xxx:9200 -p 5601:5601 -d kibana:7.4.2
 ```
 
-### 倒排索引(面试重点)
+### 倒排索引
 
 ### 官方开发手册
 
@@ -954,46 +949,9 @@ location /static/ {
 
 - [NON_GUI](https://jmeter.apache.org/usermanual/get-started.html#non_gui)
 
-```
-================================================================================
-Don't use GUI mode for load testing !, only for Test creation and Test debugging.
-For load testing, use CLI Mode (was NON GUI):
-   jmeter -n -t [jmx file] -l [results file] -e -o [Path to web report folder]
-& increase Java Heap to meet your test requirements:
-   Modify current env variable HEAP="-Xms1g -Xmx1g -XX:MaxMetaspaceSize=256m" in the jmeter batch file
-Check : https://jmeter.apache.org/usermanual/best-practices.html
-================================================================================
-```
-
 ```shell
 # 执行测试计划
 $ jmeter -n -t testplan/RedisLock.jmx -l testplan/result/result.txt -e -o testplan/webreport
-```
-
-```shell
--n
-This specifies JMeter is to run in cli mode
--t
-[name of JMX file that contains the Test Plan].
--l
-[name of JTL file to log sample results to].
--j
-[name of JMeter run log file].
--r
-Run the test in the servers specified by the JMeter property "remote_hosts"
--R
-[list of remote servers] Run the test in the specified remote servers
--g
-[path to CSV file] generate report dashboard only
--e
-generate report dashboard after load test
--o
-output folder where to generate the report dashboard after load test. Folder must not exist or be empty
-The script also lets you specify the optional firewall/proxy server information:
--H
-[proxy server hostname or ip address]
--P
-[proxy server port]
 ```
 
 ### 压测优化
@@ -1011,15 +969,15 @@ The script also lets you specify the optional firewall/proxy server information:
 - 第一个使用场景：缓存商品首页三级菜单
 
 
-- 遇到的问题：堆外内存(直接内存)溢出 `OutOfDirectMemoryError`
+- 遇到的问题：堆外内存（直接内存）溢出 `OutOfDirectMemoryError`
 - 分析思路：
   - SpringBoot2.0 之后默认使用 lettuce 作为操作 Redis 的客户端，lettuce 使用 Netty 进行网络通信。
   - lettuce 的 bug 导致 Netty 堆外内存溢出，Netty 如果没有指定对外内存 默认使用 JVM 设置的参数，可以通过 `-Dio.netty.maxDirectMemory` 设置堆外内存。
 - 解决方案：
   - 不能仅仅使用 `-Dio.netty.maxDirectMemory` 去调大堆外内存，堆外内存也是有限的；
   - 可以选择升级 lettuce 客户端；
-  - 切换使用 jedis 作为客户端；
-  - `RedisTemplate` 对 `lettuce` 与 `jedis` 均进行了封装，所以直接使用。
+  - 可以切换使用 jedis 作为客户端；
+  - `RedisTemplate` 对 `lettuce` 与 `jedis` 均进行了封装，可以直接使用。
 
 ```java
 @Override
@@ -1036,9 +994,7 @@ public Map<String, List<Catelog2VO>> getCatalogJson() {
         // 4 返回从数据库中查询的数据
         return catalogJsonFromDB;
     }
-
     Map<String, List<Catelog2VO>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2VO>>>() {});
-    
     return result;
 }
 ```
@@ -1322,7 +1278,7 @@ POST _reindex
 
 - 微博回调域名：`auth.catmall.com`，而不是`catmall.com`；
 - `OAuthController`：
-  -  `doPost`方法后三个参数数据类型是`Map`，均不能传入``null`，而是传入空的 `Map`；
+  -  `doPost`方法后三个参数数据类型是 `Map`，均不能传入`null`，而是传入空的  `Map`；
   - 另外`Map`的顺序有变化，在构建请求条件时应该将`map`传入查询参数`querys`中，而不是请求体`bodys`。
 
 ```java
